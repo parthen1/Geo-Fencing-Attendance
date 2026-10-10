@@ -1,0 +1,891 @@
+<!doctype html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>User Management - GeoAdmin</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <style type="text/tailwindcss">
+      @layer base {
+        @media (min-width: 1024px) {
+          #sidebar-toggle:checked ~ aside {
+            width: 5rem;
+          }
+          #sidebar-toggle:checked ~ aside .logo-text,
+          #sidebar-toggle:checked ~ aside .nav-text,
+          #sidebar-toggle:checked ~ aside .profile-info {
+            display: none;
+          }
+          #sidebar-toggle:checked ~ aside .nav-item {
+            justify-content: center;
+            padding-left: 0;
+            padding-right: 0;
+          }
+          #sidebar-toggle:checked ~ main {
+            margin-left: 5rem;
+          }
+          .mobile-overlay {
+            display: none !important;
+          }
+          .mobile-header {
+            display: none !important;
+          }
+        }
+        @media (max-width: 1023px) {
+          aside {
+            transform: translateX(-100%);
+            z-index: 50;
+          }
+          main {
+            margin-left: 0 !important;
+          }
+          #mobile-nav-toggle:checked ~ aside {
+            transform: translateX(0);
+          }
+          #mobile-nav-toggle:checked ~ .mobile-overlay {
+            display: block;
+          }
+        }
+      }
+    </style>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#135bec",
+              "background-light": "#f6f6f8",
+              "background-dark": "#101622",
+              "navy-sidebar": "#0f172a",
+            },
+            fontFamily: {
+              display: ["Inter"],
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body
+    class="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased min-h-screen relative"
+  >
+    <input class="hidden" id="sidebar-toggle" type="checkbox" />
+    <input class="hidden" id="mobile-nav-toggle" type="checkbox" />
+    
+    <label for="mobile-nav-toggle" class="mobile-overlay hidden fixed inset-0 bg-black/50 z-40 lg:hidden"></label>
+
+    <aside
+      class="fixed inset-y-0 left-0 w-64 bg-navy-sidebar text-white transition-transform duration-300 ease-in-out lg:transition-all lg:translate-x-0 z-50 rounded-r-2xl lg:rounded-none"
+    >
+      <div class="flex flex-col h-full overflow-hidden">
+        <div class="flex items-center justify-between px-6 py-8 lg:justify-start lg:gap-3">
+          <div class="flex items-center gap-3 logo-text">
+            <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
+              <span class="material-icons text-white text-xl">location_on</span>
+            </div>
+            <span class="text-xl font-bold tracking-tight">GeoAdmin</span>
+          </div>
+          <label class="hidden lg:block cursor-pointer hover:bg-white/10 p-1 rounded transition-colors" for="sidebar-toggle">
+            <span class="material-icons text-white">menu_open</span>
+          </label>
+          <label class="lg:hidden cursor-pointer hover:bg-white/10 p-1 rounded transition-colors" for="mobile-nav-toggle">
+            <span class="material-icons text-white">close</span>
+          </label>
+        </div>
+        <nav class="flex-1 px-4 space-y-1">
+          <a class="nav-item flex items-center gap-3 px-3 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors" href="adminhome.html">
+            <span class="material-icons text-xl">dashboard</span>
+            <span class="font-medium text-sm nav-text">Dashboard</span>
+          </a>
+          <a class="nav-item flex items-center gap-3 px-3 py-3 rounded-lg bg-primary text-white transition-colors" href="usermgmt.html">
+            <span class="material-icons text-xl">people</span>
+            <span class="font-medium text-sm nav-text">User Management</span>
+          </a>
+          <a class="nav-item flex items-center gap-3 px-3 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors" href="queries.html">
+            <span class="material-icons text-xl">question_answer</span>
+            <span class="font-medium text-sm nav-text">Queries</span>
+          </a>
+          <a class="nav-item flex items-center gap-3 px-3 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors" href="livetracking.html">
+            <span class="material-icons text-xl">map</span>
+            <span class="font-medium text-sm nav-text">Live Tracking</span>
+          </a>
+          <a class="nav-item flex items-center gap-3 px-3 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors" href="reports.html">
+            <span class="material-icons text-xl">bar_chart</span>
+            <span class="font-medium text-sm nav-text">Reports</span>
+          </a>
+          <a class="nav-item flex items-center gap-3 px-3 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors" href="timetable1.html">
+            <span class="material-icons text-xl">event_note</span>
+            <span class="font-medium text-sm nav-text">Time Table</span>
+          </a>
+        </nav>
+        <div class="p-4 border-t border-slate-800">
+          <div class="flex items-center gap-3 px-3 py-2">
+            <img alt="Admin Profile" class="w-8 h-8 rounded-full border-2 border-slate-700 flex-shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9AVzKSd4h7iiZVHyBc9xMCNdRoLS_GW2k7T08pTVPmikqQtyCaAGP9dmKjX6DjWzpF3YB9qWWNQRHnuvPlQMu-VjXImpRwrmGcZprU8jmNDz7NYq-6-UDhuPJpg-rC30vfMpnQk8BWF9xPUtJUzkoG12bpqWp3IpHusJuGn8hoci2g6ZvVIMEdgvNUcphMpgvkWoEnSL6flDcgo_HB9WhI6yelye65-P5cHNpQaDaEx60x-QeinbfvYBx_rfYesV73V68PWusT35I" />
+            <div class="flex flex-col overflow-hidden profile-info">
+              <span id="admin-user-name" class="text-sm font-semibold truncate">Admin User</span>
+              <span class="text-xs text-slate-500 truncate">System Admin</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="lg:ml-64 p-4 md:p-8 transition-all duration-300">
+      
+      <!-- Mobile Header -->
+      <div class="mobile-header lg:hidden flex items-center justify-between mb-6 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+         <div class="flex items-center gap-3">
+            <label for="mobile-nav-toggle" class="cursor-pointer text-slate-700 dark:text-slate-300 p-1 bg-slate-100 dark:bg-slate-700 rounded-lg">
+                <span class="material-icons">menu</span>
+            </label>
+            <div class="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+              <span class="material-icons text-primary text-xl">location_on</span>
+              GeoAdmin
+            </div>
+         </div>
+         <div class="flex items-center gap-2">
+             <a href="settings2.html" class="p-2 text-slate-500 hover:bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center">
+                 <span class="material-icons text-xl">settings</span>
+             </a>
+             <button id="mobile-logout-btn" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg flex items-center justify-center">
+                 <span class="material-icons text-xl">logout</span>
+             </button>
+         </div>
+      </div>
+
+      <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 class="text-2xl font-bold text-slate-900 dark:text-white">
+            User Management
+          </h1>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 pb-2">
+            View, filter, and manage all student and faculty accounts dynamically.
+          </p>
+        </div>
+        <div class="flex items-center gap-4">
+          <a href="adminhome.html" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-lg transition-colors flex items-center justify-center gap-2">
+            <span class="material-icons text-sm">upload_file</span>
+            <span class="hidden sm:inline">Add via Excel</span>
+          </a>
+          <a href="adminhome.html#single-user-form" class="px-4 py-2 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg shadow-md shadow-primary/20 transition-all flex items-center justify-center gap-2">
+            <span class="material-icons">person_add</span>
+            <span>Add Single User</span>
+          </a>
+          
+          <div class="flex items-center gap-2 hidden lg:flex border-l border-slate-200 dark:border-slate-700 pl-4 ml-2">
+              <a href="settings2.html" class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg relative">
+                <span class="material-icons">settings</span>
+              </a>
+              <button id="desktop-logout-btn" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg relative transition-colors" title="Logout">
+                 <span class="material-icons">logout</span>
+              </button>
+          </div>
+        </div>
+      </header>
+      
+      <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
+        <!-- Toolbar -->
+        <div class="p-6 border-b border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex flex-wrap items-center bg-slate-100 dark:bg-slate-900 p-1 rounded-lg gap-1">
+                <button onclick="filterUsersList('all', this)" class="px-4 py-1.5 text-sm font-medium rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm transition-all focus:outline-none filter-btn">
+                    All Users <span id="count-all" class="ml-1 text-xs text-slate-500"></span>
+                </button>
+                <button onclick="filterUsersList('student', this)" class="px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all focus:outline-none filter-btn">
+                    Students <span id="count-student" class="ml-1 text-xs"></span>
+                </button>
+                <button onclick="filterUsersList('faculty', this)" class="px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all focus:outline-none filter-btn">
+                    Faculty <span id="count-faculty" class="ml-1 text-xs"></span>
+                </button>
+            </div>
+
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+                <button id="deleteByBatchBtn" onclick="openBatchDeletePrompt()" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2 whitespace-nowrap hidden lg:flex">
+                   <span class="material-icons text-sm">group_remove</span>
+                   <span>Delete by Batch</span>
+                </button>
+                <button id="batchDeleteBtn" class="hidden px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-bold rounded-lg shadow-sm shadow-red-500/20 transition-all flex items-center justify-center gap-2 whitespace-nowrap">
+                   <span class="material-icons text-sm">delete_sweep</span>
+                   <span>Delete Selected (<span id="selectedCount">0</span>)</span>
+                </button>
+                <div class="relative w-full sm:w-auto">
+                    <span class="material-icons absolute left-3 top-2 text-slate-400 text-lg">search</span>
+                    <input id="userSearchInput" class="w-full sm:w-64 pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-primary focus:border-primary outline-none transition-all text-slate-900 dark:text-white" placeholder="Search by name, ID, or email..." type="text" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto w-full min-h-[400px]">
+          <table class="w-full text-left border-collapse whitespace-nowrap">
+            <thead class="bg-slate-50 dark:bg-slate-900/50">
+              <tr>
+                <th class="px-6 py-4 w-16 text-center">
+                   <div class="flex items-center justify-center">
+                      <input id="selectAllCheckbox" type="checkbox" class="w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary dark:focus:ring-primary dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600 cursor-pointer">
+                   </div>
+                </th>
+                <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">User Info</th>
+                <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell">System ID</th>
+                <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Role</th>
+                <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden sm:table-cell">Batch</th>
+                <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden lg:table-cell">Contact Details</th>
+                <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody" class="divide-y divide-slate-100 dark:divide-slate-700/50 text-sm">
+              <tr>
+                 <td colspan="5" class="p-8 text-center text-slate-500">
+                    <div class="flex flex-col items-center justify-center">
+                       <span class="material-icons animate-spin text-3xl mb-2 text-primary">autorenew</span>
+                       <p>Connecting to Firebase Database...</p>
+                    </div>
+                 </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <div id="table-footer" class="p-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-sm text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-900/20">
+            <span id="footer-status">Fetching database records...</span>
+        </div>
+      </div>
+    </main>
+
+    <!-- Custom Delete Confirmation Modal -->
+    <div id="deleteConfirmModal" class="hidden fixed inset-0 z-50 items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0 data-[state=open]:opacity-100 data-[state=open]:flex">
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-sm overflow-hidden transform transition-all scale-95 opacity-0 duration-200" id="modalContent">
+         <div class="p-6">
+            <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4 mx-auto">
+                <span class="material-icons text-red-600 dark:text-red-400 text-2xl">warning</span>
+            </div>
+            <h3 class="text-xl font-bold text-center text-slate-900 dark:text-white mb-2" id="modalTitle">Delete User?</h3>
+            <p class="text-slate-500 dark:text-slate-400 text-sm text-center mb-6" id="modalMessage">
+                Are you sure you want to permanently delete this user? This action cannot be undone and will revoke their portal access immediately.
+            </p>
+            <div class="flex flex-col gap-2">
+               <button id="modalConfirmBtn" class="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2">
+                   <span class="material-icons text-sm" id="modalConfirmIcon">delete_forever</span>
+                   <span id="modalConfirmText">Yes, delete permanently</span>
+               </button>
+               <button id="modalCancelBtn" class="w-full py-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-bold rounded-lg transition-colors">
+                   Cancel
+               </button>
+            </div>
+         </div>
+      </div>
+    </div>
+
+    <!-- Batch Selection Input Modal -->
+    <div id="batchInputModal" class="hidden fixed inset-0 z-[60] items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0 data-[state=open]:opacity-100 data-[state=open]:flex">
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform transition-all scale-95 opacity-0 duration-200" id="batchModalContent">
+         <div class="p-6">
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2 text-center">Delete by Batch</h3>
+            <p class="text-slate-500 dark:text-slate-400 text-sm mb-6 text-center">
+                Enter a branch code, year, or matching text to find all related accounts. (e.g., '4CE D1' or '@faculty')
+            </p>
+            
+            <div class="mb-6">
+                <label for="batchInputText" class="block mb-2 text-sm font-medium text-slate-900 dark:text-white">Batch Pattern / System ID Fragment</label>
+                <div class="relative">
+                    <span class="material-icons absolute left-3 top-3 text-slate-400 text-lg">search</span>
+                    <input type="text" id="batchInputText" placeholder="Ex: 4CE D1" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white text-sm rounded-lg focus:ring-primary focus:border-primary block p-3 pl-10 transition-colors placeholder-slate-400">
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+               <button id="batchInputCancelBtn" class="flex-1 py-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-bold rounded-lg transition-colors">
+                   Cancel
+               </button>
+               <button id="batchInputSearchBtn" class="flex-1 py-2.5 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2">
+                   <span class="material-icons text-sm">search</span>
+                   <span>Find Users</span>
+               </button>
+            </div>
+         </div>
+      </div>
+    </div>
+
+    <!-- Global UI Scripts -->
+    <script>
+      function initTheme() {
+        let savedTheme = localStorage.getItem('geoattend-theme');
+        if (!savedTheme) {
+            savedTheme = 'light';
+            localStorage.setItem('geoattend-theme', 'light');
+        }
+        if (savedTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light');
+        } else {
+            document.documentElement.classList.add('light');
+            document.documentElement.classList.remove('dark');
+        }
+      }
+
+      window.logout = function() {
+          localStorage.removeItem('geoattend-session');
+          localStorage.removeItem('geoattend-userId');
+          sessionStorage.removeItem('geoattend-session');
+          sessionStorage.removeItem('geoattend-userId');
+          window.location.href = '../loginpage.html';
+      };
+
+      document.addEventListener('DOMContentLoaded', () => {
+         const deskLogout = document.getElementById('desktop-logout-btn');
+         const mobLogout = document.getElementById('mobile-logout-btn');
+         if(deskLogout) deskLogout.addEventListener('click', window.logout);
+         if(mobLogout) mobLogout.addEventListener('click', window.logout);
+         initTheme();
+      });
+
+      // Simple UI filter selection
+      let currentFilterRole = 'all';
+      window.filterUsersList = function(role, btnElement) {
+         currentFilterRole = role;
+         const allButtons = document.querySelectorAll('.filter-btn');
+         allButtons.forEach(b => {
+           b.className = 'px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all focus:outline-none filter-btn';
+         });
+         btnElement.className = 'px-4 py-1.5 text-sm font-medium rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm transition-all focus:outline-none filter-btn';
+         
+         // Trigger the data re-render attached in the module
+         if (window.applyTableFilters) {
+             window.applyTableFilters();
+         }
+      };
+    </script>
+
+    <!-- Firebase Integration -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+      import { getFirestore, collection, getDocs, doc, deleteDoc, query, orderBy, getDoc } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+      import { db, firebaseConfig } from "../firebase-config.js";
+
+      // 1. Session Verification (Incognito Safe)
+      let session = null;
+      let currentUserId = null;
+      try {
+          session = localStorage.getItem('geoattend-session') || sessionStorage.getItem('geoattend-session');
+          currentUserId = localStorage.getItem('geoattend-userId') || sessionStorage.getItem('geoattend-userId');
+      } catch (e) {
+          console.warn("Storage access restricted. Incognito mode may be blocking localStorage.", e);
+      }
+      
+      if (session !== 'admin') {
+        window.location.href = '../loginpage.html';
+      }
+
+      // 2. Fetch Admin Profile
+      if (currentUserId) {
+        getDoc(doc(db, "users", currentUserId)).then(userDoc => {
+            if (userDoc.exists()) {
+              const nameDisplay = document.getElementById('admin-user-name');
+              if (nameDisplay) nameDisplay.textContent = userDoc.data().name || 'Admin User';
+            }
+        });
+      }
+
+      // 3. User Data Fetching, Pagination, and Rendering
+      const tableBody = document.getElementById('usersTableBody');
+      const searchInput = document.getElementById('userSearchInput');
+      const countAll = document.getElementById('count-all');
+      const countStudent = document.getElementById('count-student');
+      const countFaculty = document.getElementById('count-faculty');
+      const tableFooter = document.getElementById('table-footer');
+
+      let allMasterUsers = []; 
+      let selectedUserIds = new Set();
+      
+      // Pagination State
+      let currentPage = 1;
+      const itemsPerPage = 8;
+      let currentFilteredUsers = [];
+
+      const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+      const batchDeleteBtn = document.getElementById('batchDeleteBtn');
+      const selectedCountSpan = document.getElementById('selectedCount');
+
+      function updateBatchDeleteUI() {
+          const count = selectedUserIds.size;
+          selectedCountSpan.textContent = count;
+          if (count > 0) {
+              batchDeleteBtn.classList.remove('hidden');
+          } else {
+              batchDeleteBtn.classList.add('hidden');
+          }
+          
+          // Check if all currently visible are selected
+          const currentVisibleIds = currentFilteredUsers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map(u => u.docId);
+          if (currentVisibleIds.length > 0 && currentVisibleIds.every(id => selectedUserIds.has(id))) {
+              selectAllCheckbox.checked = true;
+          } else {
+              selectAllCheckbox.checked = false;
+          }
+      }
+
+      function renderDatatable(usersToRender) {
+          if (usersToRender.length === 0) {
+              tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-500">No users match the current filters.</td></tr>`;
+              return;
+          }
+
+          tableBody.innerHTML = '';
+          usersToRender.forEach(user => {
+              const tr = document.createElement('tr');
+              tr.className = "hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors group user-row";
+              
+              const isStudent = user.role === 'student';
+              const nameColorBg = isStudent ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400';
+              const roleBadge = isStudent ? 
+                  `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${nameColorBg}">Student</span>` : 
+                  (user.role === 'admin' ? 
+                  `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">Admin</span>` :
+                  `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${nameColorBg}">Faculty</span>`);
+
+              tr.innerHTML = `
+                <td class="px-6 py-4 w-12">
+                   <div class="flex items-center">
+                      <input type="checkbox" class="user-checkbox w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary dark:focus:ring-primary dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600 cursor-pointer" data-id="${user.docId}" ${selectedUserIds.has(user.docId) ? 'checked' : ''}>
+                   </div>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shrink-0 ${nameColorBg}">
+                      ${user.name ? user.name.charAt(0).toUpperCase() : '?'}
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-sm font-bold text-slate-900 dark:text-white tracking-tight capitalize">${user.name || 'Unknown User'}</span>
+                        <span class="text-xs text-slate-500 md:hidden mt-0.5">${user.universityId || 'No ID'}</span>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 hidden md:table-cell">
+                  <span class="text-sm font-medium font-mono text-slate-600 dark:text-slate-300">${user.universityId || 'N/A'}</span>
+                </td>
+                <td class="px-6 py-4">
+                  ${roleBadge}
+                </td>
+                <td class="px-6 py-4 hidden sm:table-cell font-mono text-sm text-slate-600 dark:text-slate-400 font-semibold">
+                  ${isStudent 
+                    ? (user.batch ? `<span class="bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-400 px-2 py-1 rounded">${user.batch}</span>` : '<span class="text-slate-400 dark:text-slate-600 italic">None</span>')
+                    : `<span class="bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 px-2 py-1 rounded">${user.branch || 'CE Department'}</span>`
+                  }
+                </td>
+                <td class="px-6 py-4 hidden lg:table-cell">
+                  <div class="flex flex-col">
+                    <span class="text-slate-700 dark:text-slate-300 font-medium">${user.email || 'No email provided'}</span>
+                    <span class="text-xs text-slate-500 font-mono mt-0.5">Password: ${user.password || '••••••••'}</span>
+                  </div>
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                      <button class="delete-user-btn p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors" data-id="${user.docId}" data-alias="${user.universityId ? user.universityId.toLowerCase() : ''}" data-email="${user.email ? user.email.toLowerCase() : ''}" title="Delete User">
+                          <span class="material-icons text-lg">delete</span>
+                      </button>
+                  </div>
+                </td>
+              `;
+              tableBody.appendChild(tr);
+          });
+
+          // Attach Checkbox Events
+          document.querySelectorAll('.user-checkbox').forEach(cb => {
+              cb.addEventListener('change', (e) => {
+                  const id = e.target.getAttribute('data-id');
+                  if (e.target.checked) {
+                      selectedUserIds.add(id);
+                  } else {
+                      selectedUserIds.delete(id);
+                  }
+                  updateBatchDeleteUI();
+              });
+          });
+          
+          updateBatchDeleteUI();
+
+          // Attach Delete Events
+          document.querySelectorAll('.delete-user-btn').forEach(btn => {
+              btn.addEventListener('click', (e) => {
+                  const id = e.currentTarget.getAttribute('data-id');
+                  const alias = e.currentTarget.getAttribute('data-alias');
+                  const emailId = e.currentTarget.getAttribute('data-email');
+                  const row = e.currentTarget.closest('tr');
+
+                  showCustomModal(
+                      "Delete User?",
+                      "Are you sure you want to permanently delete this user? This action cannot be undone and will revoke their portal access immediately.",
+                      async () => {
+                          row.style.opacity = '0.5';
+                          try {
+                              await deleteDoc(doc(db, "users", id));
+                              if (alias && alias !== id && alias !== '') await deleteDoc(doc(db, "users", alias)).catch(() => {});
+                              if (emailId && emailId !== id && emailId !== '') await deleteDoc(doc(db, "users", emailId)).catch(() => {});
+
+                              allMasterUsers = allMasterUsers.filter(u => u.docId !== id);
+                              selectedUserIds.delete(id);
+                              updateCounts();
+                              
+                              const totalFiltered = currentFilteredUsers.length - 1; 
+                              const newTotalPages = Math.ceil(totalFiltered / itemsPerPage) || 1;
+                              if (currentPage > newTotalPages) currentPage = newTotalPages;
+                              
+                              window.applyTableFilters();
+                          } catch (err) {
+                              alert(`Error deleting document: ${err.message}`);
+                              row.style.opacity = '1';
+                          }
+                      }
+                  );
+              });
+          });
+      }
+
+      // Handle Select All Checkbox
+      selectAllCheckbox.addEventListener('change', (e) => {
+          const isChecked = e.target.checked;
+          const currentVisibleIds = currentFilteredUsers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map(u => u.docId);
+          
+          if (isChecked) {
+              currentVisibleIds.forEach(id => selectedUserIds.add(id));
+          } else {
+              currentVisibleIds.forEach(id => selectedUserIds.delete(id));
+          }
+          
+          // Re-render to update checkbox visuals
+          const paginatedSlice = currentFilteredUsers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+          renderDatatable(paginatedSlice);
+      });
+
+      // Custom Modal Logic
+      const modal = document.getElementById('deleteConfirmModal');
+      const modalContent = document.getElementById('modalContent');
+      const modalCancelBtn = document.getElementById('modalCancelBtn');
+      const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalMessage = document.getElementById('modalMessage');
+
+      let currentConfirmCallback = null;
+
+      function showCustomModal(title, message, onConfirm) {
+          modalTitle.textContent = title;
+          modalMessage.textContent = message;
+          currentConfirmCallback = onConfirm;
+          
+          modal.removeAttribute('hidden');
+          modal.setAttribute('data-state', 'open');
+          setTimeout(() => {
+              modalContent.classList.remove('scale-95', 'opacity-0');
+              modalContent.classList.add('scale-100', 'opacity-100');
+          }, 10);
+      }
+
+      function hideCustomModal() {
+          modalContent.classList.remove('scale-100', 'opacity-100');
+          modalContent.classList.add('scale-95', 'opacity-0');
+          setTimeout(() => {
+              modal.setAttribute('data-state', 'closed');
+              modal.classList.add('hidden');
+              currentConfirmCallback = null;
+          }, 200);
+      }
+
+      modalCancelBtn.addEventListener('click', hideCustomModal);
+      
+      modalConfirmBtn.addEventListener('click', async () => {
+          if (currentConfirmCallback) {
+              const originalText = modalConfirmBtn.innerHTML;
+              modalConfirmBtn.disabled = true;
+              modalConfirmBtn.innerHTML = `<span class="material-icons text-sm animate-spin">refresh</span><span>Deleting...</span>`;
+              
+              await currentConfirmCallback();
+              
+              modalConfirmBtn.disabled = false;
+              modalConfirmBtn.innerHTML = originalText;
+          }
+          hideCustomModal();
+      });
+
+      // Batch Delete Logic (from Checkboxes)
+      batchDeleteBtn.addEventListener('click', () => {
+          if (selectedUserIds.size === 0) return;
+          
+          showCustomModal(
+              `Delete ${selectedUserIds.size} Users?`,
+              `Are you absolutely sure you want to delete ${selectedUserIds.size} selected accounts? This action cannot be undone.`,
+              async () => {
+                 await processBulkDelete(Array.from(selectedUserIds), batchDeleteBtn);
+              }
+          );
+      });
+
+      // --- NEW: Delete by Batch Pattern ---
+      const batchInputModal = document.getElementById('batchInputModal');
+      const batchModalContent = document.getElementById('batchModalContent');
+      const batchInputCancelBtn = document.getElementById('batchInputCancelBtn');
+      const batchInputSearchBtn = document.getElementById('batchInputSearchBtn');
+      const batchInputText = document.getElementById('batchInputText');
+
+      window.openBatchDeletePrompt = () => {
+          batchInputText.value = '';
+          batchInputModal.removeAttribute('hidden');
+          batchInputModal.setAttribute('data-state', 'open');
+          setTimeout(() => {
+              batchModalContent.classList.remove('scale-95', 'opacity-0');
+              batchModalContent.classList.add('scale-100', 'opacity-100');
+              batchInputText.focus();
+          }, 10);
+      };
+
+      function closeBatchDeletePrompt() {
+          batchModalContent.classList.remove('scale-100', 'opacity-100');
+          batchModalContent.classList.add('scale-95', 'opacity-0');
+          setTimeout(() => {
+              batchInputModal.setAttribute('data-state', 'closed');
+              batchInputModal.classList.add('hidden');
+          }, 200);
+      }
+
+      batchInputCancelBtn.addEventListener('click', closeBatchDeletePrompt);
+
+      batchInputSearchBtn.addEventListener('click', () => {
+          const pattern = batchInputText.value.toLowerCase().trim();
+          if (!pattern) return;
+
+          // Find users matching the pattern
+          const matchingUsers = allMasterUsers.filter(u => 
+              (u.universityId && u.universityId.toLowerCase().includes(pattern)) ||
+              (u.email && u.email.toLowerCase().includes(pattern)) ||
+              (u.batch && u.batch.toLowerCase().includes(pattern))
+          );
+
+          closeBatchDeletePrompt();
+
+          if (matchingUsers.length === 0) {
+              alert(`No users found matching the pattern "${pattern}".`);
+              return;
+          }
+
+          // Trigger the standard custom confirmation modal
+          showCustomModal(
+              `Delete ${matchingUsers.length} Users?`,
+              `Found ${matchingUsers.length} users matching "${pattern}". Are you sure you want to permanently delete them all? This cannot be undone.`,
+              async () => {
+                  const matchBtnOriginalHtml = `<span class="material-icons text-sm">group_remove</span><span>Delete by Batch</span>`;
+                  const batchBtn = document.getElementById('deleteByBatchBtn');
+                  batchBtn.innerHTML = `<span class="material-icons text-sm animate-spin">refresh</span><span>Deleting...</span>`;
+                  batchBtn.disabled = true;
+                  
+                  await processBulkDelete(matchingUsers.map(u => u.docId), null);
+
+                  batchBtn.disabled = false;
+                  batchBtn.innerHTML = matchBtnOriginalHtml;
+              }
+          );
+      });
+
+      // Helper to process deletion loops for checkboxes OR pattern matched batches.
+      async function processBulkDelete(idsToDelete, originatingBtn = null) {
+          try {
+              if(originatingBtn) {
+                 originatingBtn.innerHTML = `<span class="material-icons text-sm animate-spin">refresh</span><span>Deleting...</span>`;
+                 originatingBtn.disabled = true;
+              }
+              
+              const idSetToDelete = new Set(idsToDelete);
+
+              for (const id of idsToDelete) {
+                  const userObj = allMasterUsers.find(u => u.docId === id);
+                  if (userObj) {
+                      const alias = userObj.universityId ? userObj.universityId.toLowerCase() : '';
+                      const emailId = userObj.email ? userObj.email.toLowerCase() : '';
+                      
+                      await deleteDoc(doc(db, "users", id)).catch(e => console.error(e));
+                      if (alias && alias !== id && alias !== '') await deleteDoc(doc(db, "users", alias)).catch(() => {});
+                      if (emailId && emailId !== id && emailId !== '') await deleteDoc(doc(db, "users", emailId)).catch(() => {});
+                  }
+              }
+
+              allMasterUsers = allMasterUsers.filter(u => !idSetToDelete.has(u.docId));
+              idSetToDelete.forEach(id => selectedUserIds.delete(id));
+              updateCounts();
+              
+              const totalFiltered = currentFilteredUsers.length - idsToDelete.length;
+              const newTotalPages = Math.ceil(totalFiltered / itemsPerPage) || 1;
+              if (currentPage > newTotalPages) currentPage = newTotalPages;
+              
+              window.applyTableFilters();
+              
+          } catch(err) {
+              alert(`Error during batch delete: ${err.message}`);
+          } finally {
+              if(originatingBtn) {
+                 originatingBtn.disabled = false;
+                 originatingBtn.innerHTML = `<span class="material-icons text-sm">delete_sweep</span><span>Delete Selected (<span id="selectedCount">0</span>)</span>`;
+              }
+          }
+      }
+
+      modalCancelBtn.addEventListener('click', hideCustomModal);
+      
+      modalConfirmBtn.addEventListener('click', async () => {
+          if (currentConfirmCallback) {
+              const originalText = modalConfirmBtn.innerHTML;
+              modalConfirmBtn.disabled = true;
+              modalConfirmBtn.innerHTML = `<span class="material-icons text-sm animate-spin">refresh</span><span>Deleting...</span>`;
+              
+              await currentConfirmCallback();
+              
+              modalConfirmBtn.disabled = false;
+              modalConfirmBtn.innerHTML = originalText;
+          }
+          hideCustomModal();
+      });
+
+
+      function renderPagination(totalFiltered) {
+          const totalPages = Math.ceil(totalFiltered / itemsPerPage) || 1;
+          const startItem = totalFiltered === 0 ? 0 : ((currentPage - 1) * itemsPerPage) + 1;
+          const endItem = Math.min(currentPage * itemsPerPage, totalFiltered);
+
+          let html = `<span>Showing <strong>${startItem}</strong> to <strong>${endItem}</strong> of <strong>${totalFiltered}</strong> users</span>`;
+          html += `<div class="flex items-center gap-1">`;
+          
+          // Prev Button
+          html += `<button onclick="window.changePage(${currentPage - 1})" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors disabled:opacity-50" ${currentPage === 1 ? 'disabled' : ''}>
+                      <span class="material-icons text-sm">chevron_left</span>
+                   </button>`;
+          
+          // Page Numbers
+          let startPage = Math.max(1, currentPage - 2);
+          let endPage = Math.min(totalPages, currentPage + 2);
+          
+          if (startPage > 1) {
+              html += `<button onclick="window.changePage(1)" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">1</button>`;
+              if (startPage > 2) html += `<span class="px-1 text-slate-400">...</span>`;
+          }
+
+          for (let i = startPage; i <= endPage; i++) {
+              if (i === currentPage) {
+                  html += `<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-primary text-white font-bold transition-colors">${i}</button>`;
+              } else {
+                  html += `<button onclick="window.changePage(${i})" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">${i}</button>`;
+              }
+          }
+
+          if (endPage < totalPages) {
+              if (endPage < totalPages - 1) html += `<span class="px-1 text-slate-400">...</span>`;
+              html += `<button onclick="window.changePage(${totalPages})" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">${totalPages}</button>`;
+          }
+
+          // Next Button
+          html += `<button onclick="window.changePage(${currentPage + 1})" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors disabled:opacity-50" ${currentPage === totalPages ? 'disabled' : ''}>
+                      <span class="material-icons text-sm">chevron_right</span>
+                   </button>`;
+          html += `</div>`;
+          
+          tableFooter.innerHTML = html;
+      }
+
+      window.changePage = (newPage) => {
+          currentPage = newPage;
+          const paginatedSlice = currentFilteredUsers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+          renderDatatable(paginatedSlice);
+          renderPagination(currentFilteredUsers.length);
+      };
+
+      function updateCounts() {
+          const sCount = allMasterUsers.filter(u => u.role === 'student').length;
+          const fCount = allMasterUsers.filter(u => u.role === 'faculty').length;
+          
+          countAll.textContent = `(${allMasterUsers.length})`;
+          countStudent.textContent = `(${sCount})`;
+          countFaculty.textContent = `(${fCount})`;
+      }
+
+      window.applyTableFilters = () => {
+          const searchTerm = searchInput.value.toLowerCase().trim();
+          
+          currentFilteredUsers = allMasterUsers;
+
+          if (currentFilterRole !== 'all') {
+             currentFilteredUsers = currentFilteredUsers.filter(u => u.role === currentFilterRole);
+          }
+
+          if (searchTerm !== '') {
+             currentFilteredUsers = currentFilteredUsers.filter(u => 
+                 (u.name && u.name.toLowerCase().includes(searchTerm)) || 
+                 (u.universityId && u.universityId.toLowerCase().includes(searchTerm)) ||
+                 (u.email && u.email.toLowerCase().includes(searchTerm)) ||
+                 (u.batch && u.batch.toLowerCase().includes(searchTerm))
+             );
+          }
+          
+          // Reset to page 1 on filter change
+          currentPage = 1; 
+
+          const paginatedSlice = currentFilteredUsers.slice(0, itemsPerPage);
+          renderDatatable(paginatedSlice);
+          renderPagination(currentFilteredUsers.length);
+      };
+
+      async function fetchUsersFromDB() {
+          try {
+              const querySnapshot = await getDocs(collection(db, "users"));
+              
+              allMasterUsers = [];
+              const seenEmails = new Set(); 
+
+              querySnapshot.forEach((document) => {
+                  const data = document.data();
+                  
+                  const uniqueKey = data.email ? data.email.toLowerCase() : document.id.toLowerCase();
+
+                  if (!seenEmails.has(uniqueKey)) {
+                      seenEmails.add(uniqueKey);
+                      
+                      if(data.role === 'admin' && !data.name) return;
+
+                      allMasterUsers.push({
+                          docId: document.id,
+                          ...data
+                      });
+                  }
+              });
+
+              allMasterUsers.sort((a,b) => (a.name || '').localeCompare(b.name || ''));
+
+              updateCounts();
+              window.applyTableFilters();
+              
+          } catch (error) {
+              console.error("Firestore Error:", error);
+              tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-500 font-bold bg-red-50/50">Error connecting to database. Please check Firebase configuration.</td></tr>`;
+              tableFooter.innerHTML = `Database Error`;
+          }
+      }
+
+      searchInput.addEventListener('input', window.applyTableFilters);
+      fetchUsersFromDB();
+
+    </script>
+  </body>
+</html>

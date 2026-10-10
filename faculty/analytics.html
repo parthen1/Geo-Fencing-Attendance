@@ -1,0 +1,483 @@
+<!doctype html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Faculty Analytics | GeoAttend</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#135bec",
+              "background-light": "#f6f6f8",
+              "background-dark": "#101622",
+            },
+            fontFamily: {
+              display: ["Inter"],
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings:
+          "FILL" 0,
+          "wght" 400,
+          "GRAD" 0,
+          "opsz" 24;
+      }
+      
+      .hamburger-btn {
+        display: none;
+        z-index: 110;
+        position: relative;
+      }
+
+      @media (max-width: 768px) {
+        .hamburger-btn {
+          display: flex;
+        }
+        .header-actions {
+          gap: 0.5rem;
+        }
+        .nav-menu {
+          position: fixed;
+          top: 64px; /* Header height */
+          left: -100%;
+          width: 100%;
+          height: calc(100vh - 64px);
+          background-color: #ffffff;
+          flex-direction: column;
+          align-items: center;
+          justify-content: flex-start;
+          padding-top: 2rem;
+          gap: 2rem;
+          transition: left 0.3s ease-in-out;
+          z-index: 1000;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .dark .nav-menu {
+          background-color: #111827;
+        }
+        .nav-menu.active {
+          left: 0;
+        }
+      }
+      
+      @media (min-width: 769px) {
+        .hamburger-btn {
+          display: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body
+    class="bg-background-light dark:bg-background-dark font-display text-[#0d121b] dark:text-white transition-colors duration-200"
+  >
+    <div class="relative flex min-h-screen flex-col">
+      <header
+        class="sticky top-0 z-[999] w-full border-b border-solid border-[#e7ebf3] dark:border-gray-800 bg-white dark:bg-background-dark px-6 py-3"
+      >
+        <div class="mx-auto flex max-w-7xl items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="text-primary flex items-center justify-center">
+              <span class="material-symbols-outlined text-3xl font-bold !fill-1"
+                >location_on</span
+              >
+            </div>
+            <h2 class="text-xl font-black leading-tight tracking-tight">
+              GeoAttend
+            </h2>
+          </div>
+          <div class="flex items-center gap-8">
+            <nav class="nav-menu flex items-center gap-8" id="navMenu">
+              <a
+                class="text-[#4c669a] dark:text-gray-400 hover:text-primary text-sm font-medium leading-normal transition-colors"
+                href="dashboard.html"
+                >Dashboard</a
+              >
+              <a
+                class="text-[#4c669a] dark:text-gray-400 hover:text-primary text-sm font-medium leading-normal transition-colors"
+                href="timetable.html"
+                >Time Table</a
+              >
+              <a
+                class="text-primary text-sm font-semibold leading-normal md:border-b-2 md:border-primary pb-1"
+                href="#"
+                >Analytics</a
+              >
+              <a
+                class="block md:hidden text-red-500 text-sm font-medium leading-normal hover:text-red-700 transition-colors mt-4"
+                href="#"
+                onclick="logout();"
+                >Logout</a
+              >
+            </nav>
+            <div class="flex items-center gap-4 header-actions">
+              <a
+                href="settings1.html"
+                class="flex size-10 items-center justify-center rounded-lg bg-[#e7ebf3] dark:bg-gray-800 text-[#0d121b] dark:text-white transition-all hover:bg-gray-200"
+              >
+                <span class="material-symbols-outlined">settings</span>
+              </a>
+
+              <a
+                href="profile1.html"
+                class="cursor-pointer group h-10 w-10 shrink-0 overflow-hidden rounded-full border-2 border-primary bg-center bg-no-repeat bg-cover block"
+                style="
+                  background-image: url(&quot;https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&amp;fit=facearea&amp;facepad=2&amp;w=256&amp;h=256&amp;q=80&quot;);
+                "
+              ></a>
+              <button onclick="logout();" class="hidden md:flex shrink-0 items-center justify-center rounded-lg h-10 w-10 bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors" title="Logout">
+                  <span class="material-symbols-outlined text-[20px]">logout</span>
+              </button>
+              
+              <button id="hamburgerBtn" class="hamburger-btn flex shrink-0 items-center justify-center rounded-lg h-10 w-10 bg-[#e7ebf3] dark:bg-gray-800 text-[#0d121b] dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                <span class="material-symbols-outlined text-[20px]">menu</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+      
+      <!-- Content Section Placeholder for Analytics -->
+      <main class="flex-grow p-6 lg:p-10">
+        <div class="mx-auto max-w-7xl">
+            <div class="mb-8">
+              <h1 class="text-4xl font-black tracking-tight text-[#0d121b] dark:text-white">
+                Faculty Analytics Dashboard
+              </h1>
+              <p class="text-lg text-[#4c669a] dark:text-gray-400">
+                Detailed insights on student attendance, trends, and statistics.
+              </p>
+            </div>
+            
+            <!-- Summary KPI Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <!-- Card 1 -->
+                <div class="rounded-xl bg-white dark:bg-gray-800 border border-[#e7ebf3] dark:border-gray-700 p-6 shadow-sm flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">Avg Attendance</h3>
+                        <div class="h-10 w-10 flex text-primary items-center justify-center bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                            <span class="material-symbols-outlined text-[20px]">grading</span>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-3xl font-black text-[#0d121b] dark:text-white mb-1">87.4%</p>
+                        <p class="text-xs font-semibold text-green-500 bg-green-50 dark:bg-green-500/10 inline-flex px-2 py-0.5 rounded gap-1 items-center">
+                            <span class="material-symbols-outlined text-[14px]">arrow_upward</span>
+                            +2.1% this week
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Card 2 -->
+                <div class="rounded-xl bg-white dark:bg-gray-800 border border-[#e7ebf3] dark:border-gray-700 p-6 shadow-sm flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">Total Enrolled</h3>
+                        <div class="h-10 w-10 flex text-indigo-500 items-center justify-center bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+                            <span class="material-symbols-outlined text-[20px]">groups</span>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-3xl font-black text-[#0d121b] dark:text-white mb-1">214</p>
+                        <p class="text-xs font-medium text-[#4c669a] dark:text-gray-500">Across 3 Batches</p>
+                    </div>
+                </div>
+                
+                <!-- Card 3 -->
+                <div class="rounded-xl bg-white dark:bg-gray-800 border border-[#e7ebf3] dark:border-gray-700 p-6 shadow-sm flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">Classes Conducted</h3>
+                        <div class="h-10 w-10 flex text-amber-500 items-center justify-center bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                            <span class="material-symbols-outlined text-[20px]">school</span>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-3xl font-black text-[#0d121b] dark:text-white mb-1">148</p>
+                        <p class="text-xs font-medium text-[#4c669a] dark:text-gray-500">Lectures: 92 • Labs: 56</p>
+                    </div>
+                </div>
+                
+                <!-- Card 4 -->
+                <div class="rounded-xl bg-white dark:bg-gray-800 border border-red-200 dark:border-red-900/40 p-6 shadow-sm flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute right-0 top-0 bottom-0 w-1 bg-red-500"></div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-bold text-red-600 dark:text-red-400 uppercase tracking-wider">Geo-Anomalies</h3>
+                        <div class="h-10 w-10 flex text-red-500 items-center justify-center bg-red-50 dark:bg-red-900/20 rounded-lg">
+                            <span class="material-symbols-outlined text-[20px]">warning</span>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-3xl font-black text-[#0d121b] dark:text-white mb-1">12</p>
+                        <p class="text-xs font-medium text-red-500">Blocked Proxy Attempts</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subject Breakdown & Trends -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <!-- Subject Breakdown -->
+                <div class="lg:col-span-2 rounded-xl bg-white dark:bg-gray-800 border border-[#e7ebf3] dark:border-gray-700 p-6 shadow-sm">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold text-[#0d121b] dark:text-white flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">bar_chart</span>
+                            Subject Attendance
+                        </h2>
+                        <button class="text-sm font-semibold text-primary hover:underline">Download CSV</button>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <!-- Subject 1 -->
+                        <div>
+                            <div class="flex justify-between items-end mb-2">
+                                <div>
+                                    <h4 class="text-sm font-bold text-[#0d121b] dark:text-white">Cloud Computing (CC)</h4>
+                                    <p class="text-xs text-[#4c669a] dark:text-gray-400">6CE-D, 6CE-A</p>
+                                </div>
+                                <span class="text-sm font-bold text-green-600">92%</span>
+                            </div>
+                            <div class="w-full bg-gray-100 dark:bg-gray-700 h-2.5 rounded-full overflow-hidden">
+                                <div class="bg-green-500 h-full rounded-full" style="width: 92%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Subject 2 -->
+                        <div>
+                            <div class="flex justify-between items-end mb-2">
+                                <div>
+                                    <h4 class="text-sm font-bold text-[#0d121b] dark:text-white">Data Structures (DS)</h4>
+                                    <p class="text-xs text-[#4c669a] dark:text-gray-400">2CE-C, 2CE-D</p>
+                                </div>
+                                <span class="text-sm font-bold text-amber-500">84%</span>
+                            </div>
+                            <div class="w-full bg-gray-100 dark:bg-gray-700 h-2.5 rounded-full overflow-hidden">
+                                <div class="bg-amber-500 h-full rounded-full" style="width: 84%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Subject 3 -->
+                        <div>
+                            <div class="flex justify-between items-end mb-2">
+                                <div>
+                                    <h4 class="text-sm font-bold text-[#0d121b] dark:text-white">Python Programming Lab</h4>
+                                    <p class="text-xs text-[#4c669a] dark:text-gray-400">4CE-A, 4CE-B</p>
+                                </div>
+                                <span class="text-sm font-bold text-red-500">68%</span>
+                            </div>
+                            <div class="w-full bg-gray-100 dark:bg-gray-700 h-2.5 rounded-full overflow-hidden">
+                                <div class="bg-red-500 h-full rounded-full" style="width: 68%"></div>
+                            </div>
+                            <p class="text-[10px] text-red-500 mt-2 font-medium flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[12px]">info</span>
+                                Action Required: Attendance critically low
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Anomalies Box -->
+                <div class="rounded-xl bg-white dark:bg-gray-800 border border-[#e7ebf3] dark:border-gray-700 p-6 shadow-sm">
+                    <h2 class="text-xl font-bold text-[#0d121b] dark:text-white mb-6 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-red-500">gps_off</span>
+                        Geo-Anomalies
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div class="flex gap-3 p-3 rounded-lg border border-red-100 dark:border-red-900/30 bg-red-50/50 dark:bg-red-900/10">
+                            <div class="mt-0.5 text-red-500"><span class="material-symbols-outlined text-xl">phonelink_erase</span></div>
+                            <div>
+                                <h4 class="text-sm font-bold text-[#0d121b] dark:text-gray-200">Multiple Devices Detected</h4>
+                                <p class="text-xs text-[#4c669a] dark:text-gray-400 mt-0.5">Om Patel (4CE-A) attempted login from 3 different IPS.</p>
+                                <span class="text-[10px] font-semibold text-gray-500 mt-1 block">10 mins ago</span>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-3 p-3 rounded-lg border border-amber-100 dark:border-amber-900/30 bg-amber-50/50 dark:bg-amber-900/10">
+                            <div class="mt-0.5 text-amber-500"><span class="material-symbols-outlined text-xl">location_disabled</span></div>
+                            <div>
+                                <h4 class="text-sm font-bold text-[#0d121b] dark:text-gray-200">Out of Radius (> 10m)</h4>
+                                <p class="text-xs text-[#4c669a] dark:text-gray-400 mt-0.5">Kavy Modi (6CE-D) blocked. Distance: 45m away.</p>
+                                <span class="text-[10px] font-semibold text-gray-500 mt-1 block">Yesterday, 10:45 AM</span>
+                            </div>
+                        </div>
+                        
+                        <button class="w-full mt-2 py-2 text-sm font-bold text-[#4c669a] hover:text-primary transition-colors border border-[#e7ebf3] dark:border-gray-700 rounded-lg">
+                            View All Logs
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- At-Risk Students Action List -->
+            <div class="rounded-xl bg-white dark:bg-gray-800 border border-[#e7ebf3] dark:border-gray-700 shadow-sm overflow-hidden">
+                <div class="p-6 border-b border-[#e7ebf3] dark:border-gray-700 flex flex-col md:flex-row justify-between md:items-center gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-[#0d121b] dark:text-white flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">priority_high</span>
+                            At-Risk Students (< 75%)
+                        </h2>
+                        <p class="text-sm text-[#4c669a] dark:text-gray-400 mt-1">Students dangerously low on mandatory attendance</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="px-4 py-2 border border-[#cfd7e7] dark:border-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            Filter
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 dark:bg-gray-800/50 text-[#4c669a] dark:text-gray-400 text-xs uppercase font-bold tracking-wider">
+                                <th class="px-6 py-4">Student Info</th>
+                                <th class="px-6 py-4">Batch/Subject</th>
+                                <th class="px-6 py-4">Status</th>
+                                <th class="px-6 py-4">Attendance %</th>
+                                <th class="px-6 py-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#e7ebf3] dark:divide-gray-700">
+                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="size-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold text-xs uppercase">
+                                            DR
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-bold text-[#0d121b] dark:text-white">Devansh Rathod</p>
+                                            <p class="text-xs text-[#4c669a] dark:text-gray-400">23CE045</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <p class="text-sm font-semibold text-[#0d121b] dark:text-white">4CE-A</p>
+                                    <p class="text-xs text-[#4c669a] dark:text-gray-400">Python Lab</p>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 text-[10px] font-bold uppercase tracking-wider">
+                                        Critical
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-sm font-bold text-red-600">54%</span>
+                                        <div class="w-20 bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
+                                            <div class="bg-red-500 h-full rounded-full" style="width: 54%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <button class="text-primary text-sm font-bold hover:underline">Send Warning</button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="size-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 font-bold text-xs uppercase">
+                                            SP
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-bold text-[#0d121b] dark:text-white">Smit Patel</p>
+                                            <p class="text-xs text-[#4c669a] dark:text-gray-400">23CE102</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <p class="text-sm font-semibold text-[#0d121b] dark:text-white">4CE-B</p>
+                                    <p class="text-xs text-[#4c669a] dark:text-gray-400">Python Lab</p>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400 text-[10px] font-bold uppercase tracking-wider">
+                                        At Risk
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-sm font-bold text-amber-500">72%</span>
+                                        <div class="w-20 bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
+                                            <div class="bg-amber-500 h-full rounded-full" style="width: 72%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <button class="text-primary text-sm font-bold hover:underline">Send Warning</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+      </main>
+
+      <footer
+        class="mt-auto px-6 py-8 border-t border-[#e7ebf3] dark:border-gray-800 text-center"
+      >
+        <p class="text-sm text-[#4c669a] dark:text-gray-500">
+          © 2026 GeoAttend Developed by Parthen04. All rights reserved.
+        </p>
+      </footer>
+    </div>
+    
+    <script type="module">
+      import { db } from "../firebase-config.js";
+      import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+      // Session Verification
+      const session = localStorage.getItem('geoattend-session') || sessionStorage.getItem('geoattend-session');
+      const userId = localStorage.getItem('geoattend-userId') || sessionStorage.getItem('geoattend-userId');
+
+      if (session !== 'faculty') {
+        window.location.href = '../loginpage.html';
+      }
+
+      // Hamburger Menu Logic
+      const hamburgerBtn = document.getElementById("hamburgerBtn");
+      const navMenu = document.getElementById("navMenu");
+      
+      if (hamburgerBtn) {
+        hamburgerBtn.addEventListener("click", () => {
+          navMenu.classList.toggle("active");
+          const icon = hamburgerBtn.querySelector('.material-symbols-outlined');
+          if (icon) icon.textContent = navMenu.classList.contains("active") ? "close" : "menu";
+        });
+      }
+
+      // Global Theme Management
+      function initTheme() {
+        let savedTheme = localStorage.getItem('geoattend-theme') || 'light';
+        document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+        document.documentElement.classList.toggle('light', savedTheme !== 'dark');
+      }
+      
+      window.logout = function() {
+          localStorage.removeItem('geoattend-session');
+          localStorage.removeItem('geoattend-userId');
+          sessionStorage.removeItem('geoattend-session');
+          sessionStorage.removeItem('geoattend-userId');
+          window.location.href = '../loginpage.html';
+      }
+
+      initTheme();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,663 @@
+<!doctype html>
+
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Student Settings - Attendance System</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#135bec",
+              "background-light": "#f6f6f8",
+              "background-dark": "#101622",
+            },
+            fontFamily: {
+              display: ["Lexend"],
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings:
+          "FILL" 0,
+          "wght" 400,
+          "GRAD" 0,
+          "opsz" 24;
+      }
+
+      /* Mobile Navigation CSS */
+      .hamburger-btn {
+        display: none;
+        z-index: 110;
+        position: relative;
+      }
+      @media (max-width: 768px) {
+        .hamburger-btn {
+          display: flex;
+        }
+        .header-actions {
+          gap: 0.5rem;
+        }
+        .nav-menu {
+          position: fixed;
+          top: 64px; /* Header height */
+          left: -100%;
+          width: 100%;
+          height: calc(100vh - 64px);
+          background-color: #ffffff;
+          flex-direction: column;
+          align-items: center;
+          justify-content: flex-start;
+          padding-top: 2rem;
+          gap: 2rem;
+          transition: left 0.3s ease-in-out;
+          z-index: 1000;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .dark .nav-menu {
+          background-color: #111827;
+        }
+        .nav-menu.active {
+          left: 0;
+        }
+      }
+      @media (min-width: 769px) {
+        .hamburger-btn {
+          display: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body
+    class="bg-background-light dark:bg-background-dark min-h-screen font-display transition-colors duration-200"
+  >
+    <!-- Top Navigation Bar -->
+    <header
+      class="sticky top-0 z-[999] w-full bg-white dark:bg-background-dark border-b border-gray-200 dark:border-gray-800"
+    >
+      <div
+        class="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between"
+      >
+        <div class="flex items-center gap-3 text-primary">
+          <div
+            class="size-8 bg-primary rounded-lg flex items-center justify-center text-white"
+          >
+            <span class="material-symbols-outlined">location_on</span>
+          </div>
+          <h2
+            class="text-[#0d121b] dark:text-white text-lg font-bold tracking-tight"
+          >
+            GeoAttend
+          </h2>
+        </div>
+        <div class="flex flex-1 justify-end items-center gap-6">
+          <nav class="nav-menu flex items-center gap-8" id="navMenu">
+            <a
+              class="text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-white text-sm font-medium transition-colors"
+              href="dashboard.html"
+              >Dashboard</a
+            >
+            <a
+              class="text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-white text-sm font-medium transition-colors"
+              href="timetable.html"
+              >Time Table</a
+            >
+            <a
+              class="text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-white text-sm font-medium transition-colors"
+              href="analytics.html"
+              >Analytics</a
+            >
+            <a
+              class="block md:hidden text-red-500 text-sm font-medium transition-colors mt-4"
+              href="#"
+              onclick="logout();"
+              >Logout</a
+            >
+          </nav>
+          <div
+            class="h-6 w-px bg-gray-200 dark:bg-gray-800 hidden md:block"
+          ></div>
+          <div class="flex items-center gap-4 header-actions">
+            <button
+              class="p-2 rounded-lg bg-primary/10 text-primary flex items-center justify-center"
+            >
+              <span class="material-symbols-outlined max-md:text-[20px]">settings</span>
+            </button>
+            <a
+              href="profile1.html"
+              class="cursor-pointer group bg-center bg-no-repeat aspect-square bg-cover rounded-full size-9 border-2 border-primary/20 block"
+              data-alt="User profile picture with blue border"
+              style="
+                background-image: url(&quot;https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&amp;fit=facearea&amp;facepad=2&amp;w=256&amp;h=256&amp;q=80&quot;);
+              "
+            ></a>
+            <button onclick="logout();" class="hidden md:flex shrink-0 items-center justify-center rounded-lg h-9 w-9 bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors" title="Logout">
+                  <span class="material-symbols-outlined text-[20px]">logout</span>
+              </button>
+              
+            <button id="hamburgerBtn" class="hamburger-btn flex shrink-0 items-center justify-center rounded-lg h-9 w-9 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+              <span class="material-symbols-outlined text-[20px]">menu</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main class="max-w-[800px] mx-auto px-6 py-10">
+      <!-- Page Heading -->
+      <div class="mb-10">
+        <h1
+          class="text-[#0d121b] dark:text-white text-3xl font-extrabold tracking-tight"
+        >
+          Account Settings
+        </h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-2">
+          Manage your preferences, security settings, and contact support.
+        </p>
+      </div>
+      <div class="flex flex-col gap-8">
+        <!-- Profile Section -->
+        <section
+          class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden"
+        >
+          <div class="p-6 md:p-10 flex flex-col md:flex-row items-center gap-6">
+            <div
+              class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-24 w-24 border-4 border-white dark:border-gray-700 shadow-md"
+              style="
+                background-image: url(&quot;https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&amp;fit=facearea&amp;facepad=2&amp;w=256&amp;h=256&amp;q=80&quot;);
+              "
+            ></div>
+            <div class="flex flex-col text-center md:text-left">
+              <h2
+                class="text-gray-900 dark:text-white text-2xl font-bold tracking-tight"
+              >
+                Professor Parthen
+              </h2>
+              <p class="text-primary text-sm font-medium mt-1">
+                CE Department
+              </p>
+            </div>
+            <div class="mt-4 md:mt-0 md:ml-auto flex gap-3">
+              <button
+                class="flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-bold text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              >
+                <span class="material-symbols-outlined text-[18px]"
+                  >photo_camera</span
+                >
+                <span>Change Photo</span>
+              </button>
+              <button
+                class="flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-colors shadow-sm shadow-primary/20"
+              >
+                <span class="material-symbols-outlined text-[18px]"
+                  >edit</span
+                >
+                <span>Edit Profile</span>
+              </button>
+            </div>
+          </div>
+        </section>
+        <!-- Appearance Section -->
+        <section
+          class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden"
+        >
+          <div class="p-6">
+            <div class="flex items-center gap-3 mb-4">
+              <span class="material-symbols-outlined text-primary"
+                >palette</span
+              >
+              <h2 class="text-[#0d121b] dark:text-white text-xl font-bold">
+                Appearance
+              </h2>
+            </div>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mb-6">
+              Customize how the interface looks on your device.
+            </p>
+            <div class="bg-gray-50 dark:bg-gray-800/50 p-1 rounded-xl flex">
+              <label
+                class="flex-1 flex cursor-pointer items-center justify-center py-2.5 rounded-lg transition-all duration-200 has-[:checked]:bg-white dark:has-[:checked]:bg-gray-700 has-[:checked]:shadow-sm has-[:checked]:text-primary text-gray-500 dark:text-gray-400 font-medium text-sm"
+              >
+                <span class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[20px]"
+                    >light_mode</span
+                  >
+                  Light
+                </span>
+                <input
+                  checked=""
+                  class="hidden"
+                  name="theme-mode"
+                  onclick="document.documentElement.className = 'light'"
+                  type="radio"
+                  value="light"
+                />
+              </label>
+              <label
+                class="flex-1 flex cursor-pointer items-center justify-center py-2.5 rounded-lg transition-all duration-200 has-[:checked]:bg-white dark:has-[:checked]:bg-gray-700 has-[:checked]:shadow-sm has-[:checked]:text-primary text-gray-500 dark:text-gray-400 font-medium text-sm"
+              >
+                <span class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[20px]"
+                    >dark_mode</span
+                  >
+                  Dark
+                </span>
+                <input
+                  class="hidden"
+                  name="theme-mode"
+                  onclick="document.documentElement.className = 'dark'"
+                  type="radio"
+                  value="dark"
+                />
+              </label>
+            </div>
+          </div>
+        </section>
+        <!-- Security Section -->
+        <section
+          class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden"
+        >
+          <div class="p-6">
+            <div class="flex items-center gap-3 mb-6">
+              <span class="material-symbols-outlined text-primary"
+                >shield_lock</span
+              >
+              <h2 class="text-[#0d121b] dark:text-white text-xl font-bold">
+                Security
+              </h2>
+            </div>
+            <form class="space-y-5" onsubmit="event.preventDefault()">
+              <div class="grid grid-cols-1 gap-5">
+                <div class="flex flex-col gap-2">
+                  <label
+                    class="text-sm font-semibold text-gray-700 dark:text-gray-300"
+                    >Current Password</label
+                  >
+                  <input
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    placeholder="••••••••"
+                    type="password"
+                  />
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div class="flex flex-col gap-2">
+                    <label
+                      class="text-sm font-semibold text-gray-700 dark:text-gray-300"
+                      >New Password</label
+                    >
+                    <input
+                      class="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                      placeholder="At least 8 characters"
+                      type="password"
+                    />
+                  </div>
+                  <div class="flex flex-col gap-2">
+                    <label
+                      class="text-sm font-semibold text-gray-700 dark:text-gray-300"
+                      >Confirm New Password</label
+                    >
+                    <input
+                      class="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                      placeholder="Repeat new password"
+                      type="password"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="pt-2">
+                <button
+                  class="bg-primary text-white px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-primary/90 transition-colors shadow-sm shadow-primary/20"
+                >
+                  Update Password
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+        <!-- Support Section -->
+        <section
+          class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden"
+        >
+          <div class="p-6">
+            <div class="flex items-center gap-3 mb-4">
+              <span class="material-symbols-outlined text-primary"
+                >contact_support</span
+              >
+              <h2 class="text-[#0d121b] dark:text-white text-xl font-bold">
+                Support
+              </h2>
+            </div>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mb-6">
+              Need help? Send a message to the system administrator. Responses
+              typically take 24 hours.
+            </p>
+            <div class="space-y-4">
+            <div class="space-y-4">
+              <div class="flex flex-col gap-2">
+                <label
+                  class="text-sm font-semibold text-gray-700 dark:text-gray-300"
+                  >Message</label
+                >
+                <textarea
+                  id="support-message"
+                  class="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none"
+                  placeholder="How can we help you today?"
+                  rows="4"
+                ></textarea>
+              </div>
+              <button
+                id="send-query-btn"
+                class="flex items-center justify-center gap-2 bg-primary/10 text-primary border border-primary/20 px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span id="btn-icon" class="material-symbols-outlined text-[20px]">send</span>
+                <span id="btn-text">Send Message</span>
+              </button>
+              <p id="query-status" class="text-xs font-medium hidden"></p>
+            </div>
+          </div>
+        </section>
+        <!-- Account Actions Section -->
+        <section
+          class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden border-l-4 border-l-red-500"
+        >
+          <div
+            class="p-6 flex flex-col md:flex-row items-center justify-between gap-6"
+          >
+            <div>
+              <h2 class="text-[#0d121b] dark:text-white text-lg font-bold">
+                Session Management
+              </h2>
+              <p class="text-gray-500 dark:text-gray-400 text-sm">
+                Sign out of your account on this device.
+              </p>
+            </div>
+            <button
+              onclick="logout();"
+              class="w-full md:w-auto flex items-center justify-center gap-2 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 px-8 py-3 rounded-lg font-bold text-sm hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors border border-red-100 dark:border-red-500/20"
+            >
+              <span class="material-symbols-outlined text-[20px]">logout</span>
+              Logout
+            </button>
+          </div>
+        </section>
+      </div>
+      <footer class="mt-16 text-center text-gray-400 text-xs pb-10">
+        <p>© 2026 GeoAttend Developed by Parthen04. All rights reserved.</p>
+        <div class="flex justify-center gap-4 mt-2">
+          <a class="hover:text-primary transition-colors" href="#"
+            >Terms of Service</a
+          >
+          <a class="hover:text-primary transition-colors" href="#"
+            >Privacy Policy</a
+          >
+        </div>
+      </footer>
+    </main>
+
+    <script type="module">
+      import { db } from "../firebase-config.js";
+      import { doc, getDoc, collection, addDoc, serverTimestamp, query, where, onSnapshot, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+      const hamburgerBtn = document.getElementById('hamburgerBtn');
+      const navMenu = document.getElementById('navMenu');
+      const menuIcon = hamburgerBtn.querySelector('.material-symbols-outlined');
+
+      hamburgerBtn.addEventListener('click', () => {
+        navMenu.classList.toggle('active');
+        menuIcon.textContent = navMenu.classList.contains('active') ? 'close' : 'menu';
+      });
+
+      // Global Theme Management
+      function setTheme(theme) {
+        document.documentElement.classList.toggle('dark', theme === 'dark');
+        document.documentElement.classList.toggle('light', theme !== 'dark');
+        localStorage.setItem('geoattend-theme', theme);
+      }
+      window.setTheme = setTheme;
+
+      function initTheme() {
+        let savedTheme = localStorage.getItem('geoattend-theme') || 'light';
+        setTheme(savedTheme);
+        const radio = document.getElementById(`theme-${savedTheme}-radio`);
+        if (radio) radio.checked = true;
+      }
+
+      function logout() {
+          localStorage.removeItem('geoattend-session');
+          localStorage.removeItem('geoattend-userId');
+          sessionStorage.removeItem('geoattend-session');
+          sessionStorage.removeItem('geoattend-userId');
+          window.location.href = '../loginpage.html';
+      }
+      window.logout = logout;
+      
+      initTheme();
+
+      document.querySelectorAll('input[name="theme-mode"]').forEach((radio) => {
+          radio.addEventListener('change', (e) => {
+              if (e.target.checked) setTheme(e.target.value);
+          });
+      });
+
+      // Query & Chat Logic
+      const sections = document.querySelectorAll('section');
+      let supportSection = Array.from(sections).find(s => s.querySelector('h2')?.textContent.includes('Support'));
+      if (!supportSection) supportSection = sections[2];
+      
+      const userId = localStorage.getItem('geoattend-userId') || sessionStorage.getItem('geoattend-userId');
+      if (!userId) window.location.href = '../loginpage.html';
+
+      let activeQuery = null;
+      let isChatOpen = false;
+
+      // Listen for active queries
+      const q = query(
+          collection(db, "queries"), 
+          where("senderId", "==", userId),
+          where("status", "==", "open")
+      );
+
+      onSnapshot(q, (snapshot) => {
+          if (!snapshot.empty) {
+              const docs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+              docs.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+              activeQuery = docs[0];
+              renderSupportUI();
+          } else {
+              activeQuery = null;
+              isChatOpen = false;
+              renderSupportUI();
+          }
+      }, (error) => {
+          console.error("Query failed:", error);
+      });
+
+      function renderSupportUI() {
+          let chatHTML = '';
+          if (activeQuery && isChatOpen) {
+              chatHTML = `
+                <div class="mt-6 border-t border-gray-100 dark:border-gray-800 pt-6">
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                      <span class="material-symbols-outlined text-amber-500 text-[20px]">chat_bubble</span>
+                      <span class="text-sm font-bold text-gray-900 dark:text-white">Active Conversation</span>
+                    </div>
+                    <button id="close-chat-btn" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                      <span class="material-symbols-outlined text-[18px]">close</span>
+                    </button>
+                  </div>
+                  <div id="chat-thread" class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 h-[250px] overflow-y-auto mb-4 border border-gray-100 dark:border-gray-800 space-y-4">
+                    ${renderMessages()}
+                  </div>
+                  <div class="flex gap-2">
+                    <input id="chat-input" type="text" placeholder="Reply to admin..." class="flex-1 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm">
+                    <button id="send-chat-btn" class="bg-primary text-white p-2 rounded-lg hover:bg-primary/90 transition-all shadow-sm">
+                      <span class="material-symbols-outlined text-[18px]">send</span>
+                    </button>
+                  </div>
+                </div>
+              `;
+          }
+
+          supportSection.innerHTML = `
+            <div class="p-6">
+              <div class="flex items-center gap-3 mb-4">
+                <span class="material-symbols-outlined text-primary">contact_support</span>
+                <h2 class="text-[#0d121b] dark:text-white text-xl font-bold">Support</h2>
+              </div>
+              <p class="text-gray-500 dark:text-gray-400 text-sm mb-6">Need help? Send a message to the system administrator.</p>
+              <div class="space-y-4">
+                <div class="flex flex-col gap-2">
+                  <label class="text-sm font-semibold text-gray-700 dark:text-gray-300">Message</label>
+                  <textarea id="support-message" class="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none" placeholder="How can we help you today?" rows="3"></textarea>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3">
+                  <button id="send-query-btn" class="flex items-center justify-center gap-2 bg-primary text-white px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-primary/90 transition-all shadow-md shadow-primary/20 disabled:opacity-50">
+                    <span id="btn-icon" class="material-symbols-outlined text-[20px]">send</span>
+                    <span id="btn-text">Send Message</span>
+                  </button>
+                  ${activeQuery ? `
+                    <button id="toggle-chat-btn" class="flex items-center justify-center gap-2 bg-amber-500 text-white px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-amber-600 transition-all shadow-md shadow-amber-500/20">
+                      <span class="material-symbols-outlined text-[20px]">${isChatOpen ? 'forum' : 'mark_chat_unread'}</span>
+                      <span>${isChatOpen ? 'View Conversation' : 'Active Query'}</span>
+                    </button>
+                  ` : ''}
+                </div>
+                <p id="query-status" class="text-xs font-medium hidden"></p>
+                ${chatHTML}
+              </div>
+            </div>
+          `;
+          
+          setupFormHandlers();
+          if (isChatOpen) setupChatHandlers();
+      }
+
+      function setupFormHandlers() {
+          const sendQueryBtn = document.getElementById('send-query-btn');
+          const toggleChatBtn = document.getElementById('toggle-chat-btn');
+          
+          if (sendQueryBtn) {
+              sendQueryBtn.onclick = async () => {
+                  const messageInput = document.getElementById('support-message');
+                  const message = messageInput.value.trim();
+                  if (!message) return;
+
+                  sendQueryBtn.disabled = true;
+                  try {
+                      const userDoc = await getDoc(doc(db, "users", userId));
+                      const userData = userDoc.exists() ? userDoc.data() : { name: 'Faculty' };
+                      await addDoc(collection(db, "queries"), {
+                          message: message,
+                          senderId: userId,
+                          senderName: userData.name || 'Faculty',
+                          senderRole: 'faculty',
+                          timestamp: serverTimestamp(),
+                          status: 'open',
+                          subject: message.substring(0, 40) + (message.length > 40 ? '...' : '')
+                      });
+                      messageInput.value = '';
+                  } catch (e) { console.error(e); } finally { sendQueryBtn.disabled = false; }
+              };
+          }
+
+          if (toggleChatBtn) {
+              toggleChatBtn.onclick = () => {
+                  isChatOpen = !isChatOpen;
+                  renderSupportUI();
+              };
+          }
+      }
+
+      function setupChatHandlers() {
+          const chatInput = document.getElementById('chat-input');
+          const sendChatBtn = document.getElementById('send-chat-btn');
+          const closeChatBtn = document.getElementById('close-chat-btn');
+          const chatThread = document.getElementById('chat-thread');
+
+          if (chatThread) chatThread.scrollTop = chatThread.scrollHeight;
+          
+          if (sendChatBtn) sendChatBtn.onclick = sendChatMessage;
+          if (chatInput) chatInput.onkeypress = (e) => { if (e.key === 'Enter') sendChatMessage(); };
+          if (closeChatBtn) closeChatBtn.onclick = () => { isChatOpen = false; renderSupportUI(); };
+      }
+
+      function renderMessages() {
+          if (!activeQuery) return '';
+          let html = '';
+          if (activeQuery.message) {
+              html += renderBubble(activeQuery.senderName, activeQuery.message, activeQuery.timestamp, false);
+          }
+          if (activeQuery.messages) {
+              activeQuery.messages.forEach(msg => {
+                  html += renderBubble(msg.senderRole === 'admin' ? 'System Admin' : msg.senderName, msg.text, msg.timestamp, msg.senderRole === 'admin');
+              });
+          }
+          return html;
+      }
+
+      function renderBubble(name, text, time, isAdmin) {
+          return `
+            <div class="flex flex-col ${isAdmin ? 'items-start' : 'items-end'} gap-1">
+              <span class="text-[10px] text-gray-500 dark:text-gray-400 font-bold px-1">${name}</span>
+              <div class="max-w-[85%] px-4 py-2 rounded-2xl ${isAdmin ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-tl-none border border-gray-100 dark:border-gray-600' : 'bg-primary text-white rounded-tr-none'} shadow-sm text-sm break-words">
+                ${text}
+              </div>
+              <span class="text-[8px] text-gray-400 px-1">${formatTime(time)}</span>
+            </div>
+          `;
+      }
+
+      async function sendChatMessage() {
+          const input = document.getElementById('chat-input');
+          const text = input.value.trim();
+          if (!text || !activeQuery) return;
+
+          input.value = '';
+          try {
+              await updateDoc(doc(db, "queries", activeQuery.id), {
+                  messages: arrayUnion({
+                      text: text,
+                      senderId: userId,
+                      senderName: activeQuery.senderName,
+                      senderRole: 'faculty',
+                      timestamp: new Date().toISOString()
+                  }),
+                  updatedAt: serverTimestamp()
+              });
+          } catch (e) { console.error(e); }
+      }
+
+      function formatTime(timestamp) {
+          if (!timestamp) return '';
+          const date = (timestamp.toDate) ? timestamp.toDate() : new Date(timestamp);
+          return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
+
+      renderSupportUI();
+    </script>
+  </body>
+</html>

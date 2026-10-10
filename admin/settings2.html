@@ -1,0 +1,502 @@
+<!doctype html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Admin Settings - GeoAdmin</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <style type="text/tailwindcss">
+      @layer base {
+        /* Desktop sidebar toggle */
+        @media (min-width: 1024px) {
+          #sidebar-toggle:checked ~ aside {
+            width: 5rem;
+          }
+          #sidebar-toggle:checked ~ aside .logo-text,
+          #sidebar-toggle:checked ~ aside .nav-text,
+          #sidebar-toggle:checked ~ aside .profile-info {
+            display: none;
+          }
+          #sidebar-toggle:checked ~ aside .nav-item {
+            justify-content: center;
+            padding-left: 0;
+            padding-right: 0;
+          }
+          #sidebar-toggle:checked ~ main {
+            margin-left: 5rem;
+          }
+          .mobile-overlay {
+            display: none !important;
+          }
+          .mobile-header {
+            display: none !important;
+          }
+        }
+        
+        /* Mobile sidebar toggle */
+        @media (max-width: 1023px) {
+          aside {
+            transform: translateX(-100%);
+            z-index: 50;
+          }
+          main {
+            margin-left: 0 !important;
+          }
+          
+          #mobile-nav-toggle:checked ~ aside {
+            transform: translateX(0);
+          }
+          #mobile-nav-toggle:checked ~ .mobile-overlay {
+            display: block;
+          }
+        }
+      }
+    </style>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#135bec",
+              "background-light": "#f6f6f8",
+              "background-dark": "#101622",
+              "navy-sidebar": "#0f172a",
+            },
+            fontFamily: {
+              display: ["Inter"],
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body
+    class="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased min-h-screen relative"
+  >
+    <input class="hidden" id="sidebar-toggle" type="checkbox" />
+    <input class="hidden" id="mobile-nav-toggle" type="checkbox" />
+    
+    <!-- Mobile Overlay -->
+    <label for="mobile-nav-toggle" class="mobile-overlay hidden fixed inset-0 bg-black/50 z-40 lg:hidden"></label>
+
+    <aside
+      class="fixed inset-y-0 left-0 w-64 bg-navy-sidebar text-white transition-transform duration-300 ease-in-out lg:transition-all lg:translate-x-0 z-50 rounded-r-2xl lg:rounded-none"
+    >
+      <div class="flex flex-col h-full overflow-hidden">
+        <div class="flex items-center justify-between px-6 py-8 lg:justify-start lg:gap-3">
+          <div class="flex items-center gap-3 logo-text">
+            <div
+              class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0"
+            >
+              <span class="material-icons text-white text-xl">location_on</span>
+            </div>
+            <span class="text-xl font-bold tracking-tight">GeoAdmin</span>
+          </div>
+          <label
+            class="hidden lg:block cursor-pointer hover:bg-white/10 p-1 rounded transition-colors"
+            for="sidebar-toggle"
+          >
+            <span class="material-icons text-white">menu_open</span>
+          </label>
+          <label
+            class="lg:hidden cursor-pointer hover:bg-white/10 p-1 rounded transition-colors"
+            for="mobile-nav-toggle"
+          >
+            <span class="material-icons text-white">close</span>
+          </label>
+        </div>
+        <nav class="flex-1 px-4 space-y-1">
+          <a
+            class="nav-item flex items-center gap-3 px-3 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+            href="adminhome.html"
+          >
+            <span class="material-icons text-xl">dashboard</span>
+            <span class="font-medium text-sm nav-text">Dashboard</span>
+          </a>
+          <a
+            class="nav-item flex items-center gap-3 px-3 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+            href="usermgmt.html"
+          >
+            <span class="material-icons text-xl">people</span>
+            <span class="font-medium text-sm nav-text">User Management</span>
+          </a>
+          <a
+            class="nav-item flex items-center gap-3 px-3 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+            href="queries.html"
+          >
+            <span class="material-icons text-xl">question_answer</span>
+            <span class="font-medium text-sm nav-text">Queries</span>
+          </a>
+          <a
+            class="nav-item flex items-center gap-3 px-3 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+            href="livetracking.html"
+          >
+            <span class="material-icons text-xl">map</span>
+            <span class="font-medium text-sm nav-text">Live Tracking</span>
+          </a>
+          <a
+            class="nav-item flex items-center gap-3 px-3 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+            href="reports.html"
+          >
+            <span class="material-icons text-xl">bar_chart</span>
+            <span class="font-medium text-sm nav-text">Reports</span>
+          </a>
+          <a
+            class="nav-item flex items-center gap-3 px-3 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+            href="timetable1.html"
+          >
+            <span class="material-icons text-xl">event_note</span>
+            <span class="font-medium text-sm nav-text">Time Table</span>
+          </a>
+        </nav>
+        <div class="p-4 border-t border-slate-800">
+          <div class="flex items-center gap-3 px-3 py-2">
+            <img
+              alt="Admin Profile"
+              class="w-8 h-8 rounded-full border-2 border-slate-700 flex-shrink-0"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9AVzKSd4h7iiZVHyBc9xMCNdRoLS_GW2k7T08pTVPmikqQtyCaAGP9dmKjX6DjWzpF3YB9qWWNQRHnuvPlQMu-VjXImpRwrmGcZprU8jmNDz7NYq-6-UDhuPJpg-rC30vfMpnQk8BWF9xPUtJUzkoG12bpqWp3IpHusJuGn8hoci2g6ZvVIMEdgvNUcphMpgvkWoEnSL6flDcgo_HB9WhI6yelye65-P5cHNpQaDaEx60x-QeinbfvYBx_rfYesV73V68PWusT35I"
+            />
+            <div class="flex flex-col overflow-hidden profile-info">
+              <span class="text-sm font-semibold truncate">Parthen Desai</span>
+              <span class="text-xs text-slate-500 truncate">System Admin</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="lg:ml-64 p-4 md:p-8 transition-all duration-300">
+      
+      <!-- Mobile Header -->
+      <div class="mobile-header lg:hidden flex items-center justify-between mb-6 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+         <div class="flex items-center gap-3">
+            <label for="mobile-nav-toggle" class="cursor-pointer text-slate-700 dark:text-slate-300 p-1 bg-slate-100 dark:bg-slate-700 rounded-lg">
+                <span class="material-icons">menu</span>
+            </label>
+            <div class="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+              <span class="material-icons text-primary text-xl">location_on</span>
+              GeoAdmin
+            </div>
+         </div>
+         <div class="flex items-center gap-2">
+             <a href="settings2.html" class="p-2 text-slate-500 hover:bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center">
+                 <span class="material-icons text-xl">settings</span>
+             </a>
+             <button onclick="logout();" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg flex items-center justify-center">
+                 <span class="material-icons text-xl">logout</span>
+             </button>
+         </div>
+      </div>
+
+      <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 class="text-2xl font-bold text-slate-900 dark:text-white">
+            Admin Settings Configuration
+          </h1>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 pb-2">
+            Configure global parameters and manage your account security.
+          </p>
+        </div>
+        <div class="flex items-center gap-4 hidden lg:flex">
+          <button class="p-2 text-primary bg-primary/10 rounded-lg relative">
+            <span class="material-icons">settings</span>
+          </button>
+          <button onclick="logout();" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg relative" title="Logout">
+             <span class="material-icons">logout</span>
+          </button>
+        </div>
+      </header>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <section
+          class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden"
+        >
+          <div
+            class="p-6 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3"
+          >
+            <span class="material-icons text-primary">palette</span>
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">
+              Appearance
+            </h2>
+          </div>
+          <div class="p-6 space-y-4">
+            <p
+              class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+            >
+              Theme Selection
+            </p>
+            <div class="grid grid-cols-2 gap-4">
+              <button
+                class="flex flex-col items-center gap-2 p-4 border-2 border-primary rounded-xl bg-slate-50 dark:bg-slate-900/50"
+                onclick="setTheme('light')"
+              >
+                <span class="material-icons text-3xl text-primary"
+                  >light_mode</span
+                >
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white"
+                  >Light Mode</span
+                >
+              </button>
+              <button
+                class="flex flex-col items-center gap-2 p-4 border-2 border-transparent hover:border-slate-200 dark:hover:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50"
+                onclick="setTheme('dark')"
+              >
+                <span class="material-icons text-3xl text-slate-400"
+                  >dark_mode</span
+                >
+                <span
+                  class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-white"
+                  >Dark Mode</span
+                >
+              </button>
+            </div>
+          </div>
+        </section>
+        <section
+          class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden"
+        >
+          <div
+            class="p-6 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3"
+          >
+            <span class="material-icons text-primary">security</span>
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">
+              Security
+            </h2>
+          </div>
+          <form class="p-6 space-y-4">
+            <div class="space-y-1.5">
+              <label
+                class="text-sm font-semibold text-slate-700 dark:text-slate-300"
+                >Current Password</label
+              >
+              <input
+                class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-primary focus:border-primary outline-none transition-all text-slate-900 dark:text-white"
+                placeholder="••••••••"
+                type="password"
+              />
+            </div>
+            <div class="space-y-1.5">
+              <label
+                class="text-sm font-semibold text-slate-700 dark:text-slate-300"
+                >New Password</label
+              >
+              <input
+                class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-primary focus:border-primary outline-none transition-all text-slate-900 dark:text-white"
+                placeholder="••••••••"
+                type="password"
+              />
+            </div>
+            <div class="space-y-1.5">
+              <label
+                class="text-sm font-semibold text-slate-700 dark:text-slate-300"
+                >Confirm New Password</label
+              >
+              <input
+                class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-primary focus:border-primary outline-none transition-all text-slate-900 dark:text-white"
+                placeholder="••••••••"
+                type="password"
+              />
+            </div>
+            <button
+              class="w-full py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-all text-sm mt-2"
+            >
+              Update Password
+            </button>
+          </form>
+        </section>
+        <section
+          class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden lg:col-span-1"
+        >
+          <div
+            class="p-6 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3"
+          >
+            <span class="material-icons text-primary"
+              >settings_applications</span
+            >
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">
+              System Configuration
+            </h2>
+          </div>
+          <div class="p-6 space-y-4">
+            <div class="space-y-1.5">
+              <label
+                class="text-sm font-semibold text-slate-700 dark:text-slate-300"
+                >Attendance Radius (meters)</label
+              >
+              <input
+                class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-primary focus:border-primary outline-none text-slate-900 dark:text-white"
+                placeholder="50"
+                type="number"
+                value="50"
+              />
+            </div>
+            <div class="space-y-1.5">
+              <label
+                class="text-sm font-semibold text-slate-700 dark:text-slate-300"
+                >Session Timeout (minutes)</label
+              >
+              <input
+                class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-primary focus:border-primary outline-none text-slate-900 dark:text-white"
+                placeholder="120"
+                type="number"
+                value="120"
+              />
+            </div>
+            <div class="space-y-1.5">
+              <label
+                class="text-sm font-semibold text-slate-700 dark:text-slate-300"
+                >Geofence Sensitivity</label
+              >
+              <select
+                class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-primary focus:border-primary outline-none text-slate-900 dark:text-white"
+              >
+                <option>Low</option>
+                <option selected="">Medium</option>
+                <option>High</option>
+              </select>
+            </div>
+            <button
+              class="w-full py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-lg hover:opacity-90 transition-all text-sm mt-2"
+            >
+              Save Configuration
+            </button>
+          </div>
+        </section>
+        <section
+          class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden"
+        >
+          <div
+            class="p-6 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3"
+          >
+            <span class="material-icons text-primary">manage_accounts</span>
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">
+              Account Actions
+            </h2>
+          </div>
+          <div
+            class="p-6 flex flex-col items-center justify-center h-full min-h-[250px] space-y-6"
+          >
+            <div class="text-center">
+              <p class="text-sm text-slate-500 dark:text-slate-400">
+                Once logged out, you will need your credentials to access the
+                admin panel again.
+              </p>
+            </div>
+            <a
+              href="#" onclick="logout();"
+              class="px-8 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg shadow-lg shadow-red-500/20 transition-all flex items-center gap-2"
+            >
+              <span class="material-icons">logout</span>
+              <span>Sign Out of System</span>
+            </a>
+
+            <div
+              class="pt-4 border-t border-slate-100 dark:border-slate-700 w-full text-center"
+            >
+              <span class="text-xs text-slate-400"
+                >Last login: Today, 08:42 AM from 192.168.1.1</span
+              >
+            </div>
+          </div>
+        </section>
+      </div>
+      <section
+        class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+      >
+        <div
+          class="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700 flex items-center gap-3"
+        >
+          <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+          <span class="text-xs font-medium text-slate-600 dark:text-slate-400"
+            >System Uptime: 99.9%</span
+          >
+        </div>
+        <div
+          class="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700 flex items-center gap-3"
+        >
+          <span class="material-icons text-slate-400 text-lg">storage</span>
+          <span class="text-xs font-medium text-slate-600 dark:text-slate-400"
+            >Database Load: 12%</span
+          >
+        </div>
+        <div
+          class="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700 flex items-center gap-3"
+        >
+          <span class="material-icons text-slate-400 text-lg">schedule</span>
+          <span class="text-xs font-medium text-slate-600 dark:text-slate-400"
+            >Last Backup: 2h ago</span
+          >
+        </div>
+        <div
+          class="p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700 flex items-center gap-3"
+        >
+          <span class="material-icons text-slate-400 text-lg"
+            >verified_user</span
+          >
+          <span class="text-xs font-medium text-slate-600 dark:text-slate-400"
+            >API Gateway: Secure</span
+          >
+        </div>
+      </section>
+    </main>
+
+    <!-- Essential Scripts for Global Functionality -->
+    <script>
+      // Global Theme Management
+      function initTheme() {
+        let savedTheme = localStorage.getItem('geoattend-theme');
+        if (!savedTheme) {
+            savedTheme = 'light';
+            localStorage.setItem('geoattend-theme', 'light');
+        }
+        if (savedTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light');
+        } else {
+            document.documentElement.classList.add('light');
+            document.documentElement.classList.remove('dark');
+        }
+      }
+
+      function setTheme(theme) {
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+          document.documentElement.classList.remove('light');
+          localStorage.setItem('geoattend-theme', 'dark');
+        } else {
+          document.documentElement.classList.add('light');
+          document.documentElement.classList.remove('dark');
+          localStorage.setItem('geoattend-theme', 'light');
+        }
+      }
+
+      function logout() {
+          localStorage.removeItem('geoattend-session');
+          localStorage.removeItem('geoattend-userId');
+          sessionStorage.removeItem('geoattend-session');
+          sessionStorage.removeItem('geoattend-userId');
+          window.location.href = '../loginpage.html';
+      }
+      
+      initTheme();
+    </script>
+  </body>
+</html>

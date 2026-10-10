@@ -1,0 +1,651 @@
+<!doctype html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Attendance Overview</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#135bec",
+              "background-light": "#f6f6f8",
+              "background-dark": "#101622",
+            },
+            fontFamily: {
+              display: ["Lexend", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+    <style type="text/tailwindcss">
+      body {
+        font-family: "Lexend", sans-serif;
+      }
+      .material-symbols-outlined {
+        font-variation-settings:
+          "FILL" 0,
+          "wght" 400,
+          "GRAD" 0,
+          "opsz" 24;
+      }
+      /* Responsive CSS for Main Layout and Hamburger Menu */
+      @media (max-width: 768px) {
+        .nav-menu {
+          position: fixed;
+          top: 64px; /* Header height */
+          left: -100%;
+          width: 100%;
+          height: calc(100vh - 64px);
+          background-color: #ffffff;
+          flex-direction: column;
+          align-items: center;
+          justify-content: flex-start;
+          padding-top: 2rem;
+          gap: 2rem;
+          transition: left 0.3s ease-in-out;
+          z-index: 1000;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .dark .nav-menu {
+          background-color: #111827; /* dark gray 900 */
+        }
+        .nav-menu.active {
+          left: 0;
+        }
+        /* Make header padding consistent on small screens */
+        header {
+          padding-left: 1rem !important;
+          padding-right: 1rem !important;
+        }
+        .layout-content-container {
+          padding-left: 1rem !important;
+          padding-right: 1rem !important;
+        }
+      }
+      
+      @media (min-width: 769px) {
+        .hamburger-btn {
+          display: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-background-light dark:bg-background-dark min-h-screen">
+    <div
+      class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden"
+    >
+      <div class="layout-container flex h-full grow flex-col">
+        <header
+          class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-gray-200 dark:border-b-gray-800 bg-white dark:bg-gray-900 px-10 py-3 sticky top-0 z-[999]"
+        >
+          <div class="flex items-center gap-4 text-primary">
+            <div
+              class="size-8 flex items-center justify-center bg-primary/10 rounded-lg"
+            >
+              <span class="material-symbols-outlined text-primary"
+                >location_on</span
+              >
+            </div>
+            <h2
+              class="text-gray-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]"
+            >
+              GeoAttend
+            </h2>
+          </div>
+          <div class="flex flex-1 justify-end gap-4 md:gap-8">
+            <div class="nav-menu flex items-center gap-9" id="navMenu">
+              <a
+                class="text-gray-600 dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary transition-colors"
+                href="studenthome.html"
+                >Dashboard</a
+              >
+              <a
+                class="text-gray-600 dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary transition-colors"
+                href="studenttimetable.html"
+              >
+                Time Table
+              </a>
+              <a
+                class="text-primary text-sm font-semibold leading-normal border-b-2 border-primary pb-1"
+                href="attendance.html"
+                >Attendance</a
+              >
+              <a
+                class="block md:hidden text-red-500 text-sm font-medium leading-normal hover:text-red-700 transition-colors mt-4"
+                href="#"
+                onclick="logout();"
+                >Logout</a
+              >
+            </div>
+            <div class="flex items-center gap-3">
+              <a
+                href="settings.html"
+                class="flex items-center justify-center rounded-lg h-10 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 px-3 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              >
+                <span class="material-symbols-outlined text-[20px]"
+                  >settings</span
+                >
+              </a>
+
+              <a href="profile.html" class="flex items-center gap-2 group">
+                <div
+                  class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary/20"
+                  data-alt="User profile avatar showing a college student"
+                  style="
+                    background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuD0KwE-pkMrXbhH2-dt88ioRoEfajhvOYoBWx5mODP6w_Ys--EBwEg3itjyMzt1zrrA1P44lIEHE9GugTt11LG6-tMuKSrEORs474phaT3NiD7nZxdSiHHS9AynrvVZQ7ZSYvWDJh8FjBVaiP0EbgSWyeZxOMJEND3AO7UGZFm73HZb1amztKVL-isSgw8dyMiQi1usz-LYQ_kMkhaW5cnjscmghvjPS1_LLLgptfAh2brmRPlOhuM6Ru6keCnhkG9R6NUyFe9t46Oa&quot;);
+                  "
+                ></div>
+                <span
+                  class="material-symbols-outlined text-gray-500 text-[20px] group-hover:text-primary transition-colors hidden md:block"
+                >
+                  expand_more
+                </span>
+              </a>
+              
+              <button onclick="logout();" class="hidden md:flex items-center justify-center rounded-lg h-10 w-10 bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors" title="Logout">
+                  <span class="material-symbols-outlined text-[20px]">logout</span>
+              </button>
+              
+              <button id="hamburgerBtn" class="hamburger-btn flex items-center justify-center rounded-lg h-10 w-10 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                <span class="material-symbols-outlined text-[20px]">menu</span>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <main class="flex-1 flex flex-col items-center">
+          <div
+            class="layout-content-container flex flex-col max-w-[1200px] w-full px-6 py-8 gap-8"
+          >
+            <!-- Header Section -->
+            <div class="flex flex-wrap justify-between gap-3 items-end">
+              <div class="flex flex-col gap-2">
+                <p
+                  class="text-gray-900 dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]"
+                >
+                  My Attendance
+                </p>
+                <div class="flex items-center gap-2 text-primary font-medium">
+                  <span class="material-symbols-outlined text-sm"
+                    >insights</span
+                  >
+                  <p class="text-base text-gray-500 dark:text-gray-400">
+                    Detailed overview of your academic participation for Current Semester
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Overall Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div class="flex flex-col gap-2 rounded-xl p-6 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm relative overflow-hidden">
+                <div class="absolute right-0 top-0 w-24 h-24 bg-primary/5 rounded-bl-[100px] -z-0"></div>
+                <p class="text-gray-500 dark:text-gray-400 text-sm font-semibold uppercase tracking-wide relative z-10">Overall Average</p>
+                <p id="overall-avg-text" class="text-gray-900 dark:text-white tracking-tight text-4xl font-black leading-tight relative z-10 text-primary">--%</p>
+                <div class="flex items-center gap-1 mt-1 relative z-10">
+                    <span class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5 mt-2">
+                        <span id="overall-avg-bar" class="block bg-primary h-1.5 rounded-full" style="width: 0%"></span>
+                    </span>
+                </div>
+              </div>
+              <div class="flex flex-col gap-2 rounded-xl p-6 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
+                <p class="text-gray-500 dark:text-gray-400 text-sm font-semibold uppercase tracking-wide">Total Classes Conducted</p>
+                <p id="total-classes-text" class="text-gray-900 dark:text-white tracking-tight text-3xl font-black leading-tight">--</p>
+                <p id="total-classes-sub" class="text-green-600 dark:text-green-500 text-sm font-bold leading-normal mt-2">+0 this week</p>
+              </div>
+              <div class="flex flex-col gap-2 rounded-xl p-6 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
+                <p class="text-gray-500 dark:text-gray-400 text-sm font-semibold uppercase tracking-wide">Classes Attended</p>
+                <p id="classes-attended-text" class="text-gray-900 dark:text-white tracking-tight text-3xl font-black leading-tight">--</p>
+                <p id="classes-attended-sub" class="text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal mt-2">Target: >75%</p>
+              </div>
+              <div class="flex flex-col gap-2 rounded-xl p-6 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
+                <p class="text-gray-500 dark:text-gray-400 text-sm font-semibold uppercase tracking-wide">Leaves/Absences</p>
+                <p id="leaves-absences-text" class="text-gray-900 dark:text-white tracking-tight text-3xl font-black leading-tight text-red-500">--</p>
+                <p id="leaves-absences-sub" class="text-red-400 dark:text-red-500/80 text-sm font-medium leading-normal mt-2">Max allowed: --</p>
+              </div>
+            </div>
+
+            <!-- Subject Wise Breakdown -->
+            <div class="flex flex-col gap-4">
+              <h2 class="text-gray-900 dark:text-white text-2xl font-black leading-tight tracking-[-0.015em]">
+                Subject-wise Breakdown
+              </h2>
+              <div id="dynamic-subjects-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Data populated dynamically by JS -->
+              </div>
+            </div>
+
+            <!-- Attendance List Table -->
+            <div class="flex flex-col gap-4">
+              <div class="flex items-center justify-between px-2">
+                <h2
+                  class="text-gray-900 dark:text-white text-2xl font-black leading-tight tracking-[-0.015em]"
+                >
+                  Daily History
+                </h2>
+                <div class="flex items-center gap-2">
+                    <select class="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm rounded-lg focus:ring-primary focus:border-primary block p-2 outline-none">
+                        <option>This Week</option>
+                        <option>This Month</option>
+                        <option>Older</option>
+                    </select>
+                </div>
+              </div>
+              <div
+                class="overflow-x-auto overflow-y-hidden rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm"
+              >
+                <table class="w-full min-w-[700px] text-left border-collapse">
+                  <thead>
+                    <tr class="bg-gray-50 dark:bg-gray-800/50">
+                      <th
+                        class="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                      >
+                        Date & Time
+                      </th>
+                      <th
+                        class="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                      >
+                        Subject
+                      </th>
+                      <th
+                        class="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                      >
+                        Type
+                      </th>
+                      <th
+                        class="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                      >
+                        Location
+                      </th>
+                      <th
+                        class="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                      >
+                        Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                    <tr
+                      class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors"
+                    >
+                      <td class="px-6 py-4 text-gray-600 dark:text-gray-300 text-sm font-medium">
+                        Today, 10:10 AM
+                      </td>
+                      <td class="px-6 py-4">
+                        <p class="text-gray-900 dark:text-white font-semibold text-sm">Cloud Computing</p>
+                      </td>
+                      <td class="px-6 py-4 text-gray-500 dark:text-gray-400 text-sm">
+                        Lecture
+                      </td>
+                      <td class="px-6 py-4 text-gray-500 dark:text-gray-400 text-sm">
+                        1NB108
+                      </td>
+                      <td class="px-6 py-4">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                          Present
+                        </span>
+                      </td>
+                    </tr>
+                    <tr
+                      class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors"
+                    >
+                      <td class="px-6 py-4 text-gray-600 dark:text-gray-300 text-sm font-medium">
+                        Today, 08:30 AM
+                      </td>
+                      <td class="px-6 py-4">
+                        <p class="text-gray-900 dark:text-white font-semibold text-sm">TOC</p>
+                      </td>
+                      <td class="px-6 py-4 text-gray-500 dark:text-gray-400 text-sm">
+                        Lecture
+                      </td>
+                      <td class="px-6 py-4 text-gray-500 dark:text-gray-400 text-sm">
+                        1NB108
+                      </td>
+                      <td class="px-6 py-4">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                          Present
+                        </span>
+                      </td>
+                    </tr>
+                    <tr
+                      class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors bg-red-50/30 dark:bg-red-900/10"
+                    >
+                      <td class="px-6 py-4 text-gray-600 dark:text-gray-300 text-sm font-medium">
+                        Yesterday, 02:00 PM
+                      </td>
+                      <td class="px-6 py-4">
+                        <p class="text-gray-900 dark:text-white font-semibold text-sm">ITIM Management</p>
+                      </td>
+                      <td class="px-6 py-4 text-gray-500 dark:text-gray-400 text-sm">
+                        Lab Session
+                      </td>
+                      <td class="px-6 py-4 text-gray-500 dark:text-gray-400 text-sm">
+                        Online
+                      </td>
+                      <td class="px-6 py-4">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900">
+                          Absent
+                        </span>
+                      </td>
+                    </tr>
+                    <tr
+                      class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors"
+                    >
+                      <td class="px-6 py-4 text-gray-600 dark:text-gray-300 text-sm font-medium">
+                        Jan 21, 11:40 AM
+                      </td>
+                      <td class="px-6 py-4">
+                        <p class="text-gray-900 dark:text-white font-semibold text-sm">Artificial Intelligence</p>
+                      </td>
+                      <td class="px-6 py-4 text-gray-500 dark:text-gray-400 text-sm">
+                        Lecture
+                      </td>
+                      <td class="px-6 py-4 text-gray-500 dark:text-gray-400 text-sm">
+                        1NB106-A
+                      </td>
+                      <td class="px-6 py-4">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                          Present
+                        </span>
+                      </td>
+                    </tr>
+                     <tr
+                      class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors"
+                    >
+                      <td class="px-6 py-4 text-gray-600 dark:text-gray-300 text-sm font-medium">
+                        Jan 21, 09:15 AM
+                      </td>
+                      <td class="px-6 py-4">
+                        <p class="text-gray-900 dark:text-white font-semibold text-sm">TOC</p>
+                      </td>
+                      <td class="px-6 py-4 text-gray-500 dark:text-gray-400 text-sm">
+                        Lecture
+                      </td>
+                      <td class="px-6 py-4 text-gray-500 dark:text-gray-400 text-sm">
+                        1NB108
+                      </td>
+                      <td class="px-6 py-4">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                          Present
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </main>
+        
+        <footer
+          class="border-t border-gray-200 dark:border-gray-800 py-6 text-center text-gray-400 dark:text-gray-500 text-xs"
+        >
+          © 2026 GeoAttend Developed by Parthen04. All rights reserved. •
+          Privacy Policy • Support
+        </footer>
+      </div>
+    </div>
+
+    <script>
+      // Global Theme Management
+      function initTheme() {
+        let savedTheme = localStorage.getItem('geoattend-theme');
+        if (!savedTheme) {
+            savedTheme = 'light';
+            localStorage.setItem('geoattend-theme', 'light');
+        }
+        if (savedTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light');
+        } else {
+            document.documentElement.classList.add('light');
+            document.documentElement.classList.remove('dark');
+        }
+      }
+      initTheme();
+
+      window.logout = function() {
+          localStorage.removeItem('geoattend-session');
+          localStorage.removeItem('geoattend-userId');
+          sessionStorage.removeItem('geoattend-session');
+          sessionStorage.removeItem('geoattend-userId');
+          window.location.href = '../loginpage.html';
+      };
+      
+      const hamburgerBtn = document.getElementById('hamburgerBtn');
+      if (hamburgerBtn) {
+          const navMenu = document.getElementById('navMenu');
+          const menuIcon = hamburgerBtn.querySelector('.material-symbols-outlined');
+          hamburgerBtn.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+            const isActive = navMenu.classList.contains('active');
+            menuIcon.textContent = isActive ? 'close' : 'menu';
+            document.body.style.overflow = isActive ? 'hidden' : '';
+          });
+      }
+    </script>
+    <script type="module">
+      import { db } from "../firebase-config.js";
+      import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+      // Session Management
+      const session = localStorage.getItem('geoattend-session') || sessionStorage.getItem('geoattend-session');
+      const userId = localStorage.getItem('geoattend-userId') || sessionStorage.getItem('geoattend-userId');
+
+      if (session !== 'student') {
+        window.location.href = '../loginpage.html';
+      }
+
+      // Dynamic Data Generation
+      function seededRandom(seed) {
+          var x = Math.sin(seed++) * 10000;
+          return x - Math.floor(x);
+      }
+      
+      function hashString(str) {
+          let hash = 0;
+          for (let i = 0; i < str.length; i++) {
+              let char = str.charCodeAt(i);
+              hash = ((hash << 5) - hash) + char;
+              hash = hash & hash;
+          }
+          return Math.abs(hash);
+      }
+
+      async function loadAttendanceData() {
+          if (!userId) return;
+          try {
+              const userDoc = await getDoc(doc(db, "users", userId));
+              if (userDoc.exists()) {
+                  const userData = userDoc.data();
+                  const sysId = userData.universityId || userId;
+                  const batchStr = (userData.batch || '').trim().toUpperCase();
+                  const seed = hashString(sysId + batchStr);
+                  
+                  // Extract Subject List based on Batch
+                  let subjects = ['Programming', 'Mathematics', 'Physics', 'Digital Logic'];
+                  if (batchStr) {
+                       const match = batchStr.match(/^(\d+)([A-Z]+)/);
+                       if (match) {
+                           const sem = parseInt(match[1]);
+                           const branch = match[2];
+                           
+                           if (branch === 'CE' || branch === 'IT') {
+                               if (sem <= 2) subjects = ['C Programming', 'Basic Electronics', 'Calculus', 'Physics'];
+                               else if (sem <= 4) subjects = ['Data Structures', 'DBMS', 'Computer Networks', 'Java'];
+                               else if (sem <= 6) subjects = ['AI', 'Theory of Computation', 'Cyber Security', 'Software Engineering'];
+                               else subjects = ['Cloud Computing', 'Machine Learning', 'Blockchain', 'Big Data'];
+                           } else {
+                               subjects = ['Engineering Math', 'Mechanics', 'Thermodynamics', 'Workshop'];
+                           }
+                       }
+                  }
+
+                  // Generate Dynamic Subject Cards
+                  let cardsHtml = '';
+                  const cardColors = [
+                      { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-600 dark:text-blue-400', icon: 'code', bar: 'bg-primary' },
+                      { bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-600 dark:text-indigo-400', icon: 'functions', bar: 'bg-indigo-500' },
+                      { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-600 dark:text-emerald-400', icon: 'cloud', bar: 'bg-emerald-500' },
+                      { bg: 'bg-cyan-100 dark:bg-cyan-900/30', text: 'text-cyan-600 dark:text-cyan-400', icon: 'data_object', bar: 'bg-cyan-500' }
+                  ];
+
+                  let totalAttendedForAvg = 0;
+                  let totalClassesForAvg = 0;
+
+                  subjects.forEach((subj, idx) => {
+                      // Generate stats for this specific subject
+                      const subjSeed = seed + idx * 50;
+                      const subjTotal = Math.floor(seededRandom(subjSeed) * 20) + 30; // 30-50 classes
+                      const subjPercent = Math.floor(seededRandom(subjSeed + 1) * 45) + 50; // 50-95%
+                      const subjAttended = Math.round((subjPercent / 100) * subjTotal);
+                      
+                      totalAttendedForAvg += subjAttended;
+                      totalClassesForAvg += subjTotal;
+
+                      const colors = cardColors[idx % cardColors.length];
+                      let statusBox = '';
+                      
+                      if(subjPercent >= 75) {
+                          statusBox = `
+                          <div class="mt-2 text-gray-500 dark:text-gray-400 p-2 text-sm flex items-start gap-2">
+                            <p>Good attendance. You can miss <span class="font-bold">${Math.floor(subjAttended - (subjTotal * 0.75))}</span> more classes and stay on target.</p>
+                          </div>`;
+                      } else {
+                          statusBox = `
+                          <div class="mt-2 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 p-3 rounded-lg text-sm border border-red-100 dark:border-red-900/30 flex items-start gap-2">
+                            <span class="material-symbols-outlined text-[18px]">warning</span>
+                            <p><span class="font-bold">Below Target!</span> You need to attend the next <span class="font-bold">${Math.ceil((subjTotal * 0.75) - subjAttended)}</span> consecutive classes to reach 75%.</p>
+                          </div>`;
+                      }
+
+                      cardsHtml += `
+                      <div class="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm p-6 flex flex-col gap-4">
+                        <div class="flex justify-between items-start">
+                          <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded ${colors.bg} flex items-center justify-center">
+                              <span class="material-symbols-outlined ${colors.text}">${colors.icon}</span>
+                            </div>
+                            <div>
+                              <h3 class="text-lg font-bold text-gray-900 dark:text-white">${subj}</h3>
+                              <p class="text-sm text-gray-500 dark:text-gray-400">Class Instructor</p>
+                            </div>
+                          </div>
+                          <span class="text-2xl font-black ${subjPercent < 75 ? 'text-red-500' : 'text-gray-900 dark:text-white'}">${subjPercent}%</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mt-2">
+                          <span class="font-bold text-gray-900 dark:text-white">${subjAttended}</span> Attended out of <span class="font-bold text-gray-900 dark:text-white">${subjTotal}</span> Total
+                        </div>
+                        <div class="w-full bg-gray-100 dark:bg-gray-800 h-2 rounded-full">
+                          <div class="${subjPercent < 75 ? 'bg-red-500' : colors.bar} h-2 rounded-full" style="width: ${subjPercent}%"></div>
+                        </div>
+                        ${statusBox}
+                      </div>`;
+                  });
+
+                  const cardsGrid = document.getElementById('dynamic-subjects-grid');
+                  if(cardsGrid) cardsGrid.innerHTML = cardsHtml;
+
+                  // Update Overall Stats
+                  const overallAvg = Math.round((totalAttendedForAvg / totalClassesForAvg) * 100) || 0;
+                  document.getElementById('overall-avg-text').innerText = overallAvg + '%';
+                  document.getElementById('overall-avg-bar').style.width = overallAvg + '%';
+                  
+                  document.getElementById('total-classes-text').innerText = totalClassesForAvg;
+                  document.getElementById('total-classes-sub').innerText = '+' + Math.floor(Math.random() * 5 + 1) + ' this week';
+                  
+                  document.getElementById('classes-attended-text').innerText = totalAttendedForAvg;
+                  const targetMin = Math.ceil(totalClassesForAvg * 0.75);
+                  document.getElementById('classes-attended-sub').innerHTML = `Target: >75% (Min. <span class="font-bold">${targetMin}</span>)`;
+                  
+                  const leaves = totalClassesForAvg - totalAttendedForAvg;
+                  document.getElementById('leaves-absences-text').innerText = leaves;
+                  const maxAllowed = Math.floor(totalClassesForAvg * 0.25);
+                  document.getElementById('leaves-absences-sub').innerText = 'Max allowed: ' + maxAllowed;
+
+                  // Generate 15 Days of History
+                  let historyHtml = '';
+                  const locGens = ['1NB108', 'Lab 005-A', 'Room 102-B', 'New Building, 209', 'Old Block, 101'];
+                  const types = ['Lecture', 'Lab Session', 'Tutorial', 'Lecture'];
+                  
+                  const today = new Date();
+                  
+                  for (let i = 0; i < 15; i++) {
+                      // Skip weekends occasionally
+                      const dateObj = new Date(today);
+                      dateObj.setDate(today.getDate() - i);
+                      
+                      const dateStr = i === 0 ? "Today" : (i === 1 ? "Yesterday" : dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+                      const timeStr = `${Math.floor(seededRandom(seed + i) * 5) + 8}:30 AM`;
+                      
+                      const subjIndex = Math.floor(seededRandom(seed + i + 10) * subjects.length);
+                      const subjName = subjects[subjIndex];
+                      
+                      const typeStr = types[Math.floor(seededRandom(seed + i + 15) * types.length)];
+                      const location = locGens[Math.floor(seededRandom(seed + i + 20) * locGens.length)];
+                      
+                      // 80% attendance chance
+                      const isPresent = seededRandom(seed + i + 30) < 0.80;
+                      
+                      let badgeHtml;
+                      let trClass = "hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors";
+                      
+                      if(isPresent) {
+                          badgeHtml = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">Present</span>`;
+                      } else {
+                          trClass += " bg-red-50/30 dark:bg-red-900/10";
+                          badgeHtml = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900">Absent</span>`;
+                      }
+                      
+                      historyHtml += `
+                      <tr class="${trClass}">
+                        <td class="px-6 py-4 text-gray-600 dark:text-gray-300 text-sm font-medium">
+                          ${dateStr}, ${timeStr}
+                        </td>
+                        <td class="px-6 py-4">
+                          <p class="text-gray-900 dark:text-white font-semibold text-sm">${subjName}</p>
+                        </td>
+                        <td class="px-6 py-4 text-gray-500 dark:text-gray-400 text-sm">
+                          ${typeStr}
+                        </td>
+                        <td class="px-6 py-4 text-gray-500 dark:text-gray-400 text-sm">
+                          ${location}
+                        </td>
+                        <td class="px-6 py-4">
+                          ${badgeHtml}
+                        </td>
+                      </tr>`;
+                  }
+                  
+                  const tbody = document.querySelector('tbody');
+                  if(tbody) tbody.innerHTML = historyHtml;
+              }
+          } catch(err) {
+              console.error("Error generating history:", err);
+          }
+      }
+      
+      loadAttendanceData();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1329 @@
+<!doctype html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Student Attendance Dashboard</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#135bec",
+              "background-light": "#f6f6f8",
+              "background-dark": "#101622",
+            },
+            fontFamily: {
+              display: ["Lexend", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+    <style type="text/tailwindcss">
+      body {
+        font-family: "Lexend", sans-serif;
+      }
+      .material-symbols-outlined {
+        font-variation-settings:
+          "FILL" 0,
+          "wght" 400,
+          "GRAD" 0,
+          "opsz" 24;
+      }
+      @keyframes pulse-ring {
+        0% {
+          transform: scale(0.33);
+          opacity: 1;
+        }
+        80%,
+        100% {
+          opacity: 0;
+        }
+      }
+      @keyframes pulse-dot {
+        0% {
+          transform: scale(0.8);
+        }
+        50% {
+          transform: scale(1);
+        }
+        100% {
+          transform: scale(0.8);
+        }
+      }
+      .pulse-ring {
+        animation: pulse-ring 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+      .pulse-dot {
+        animation: pulse-dot 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+      .fence-label-icon {
+        background: transparent !important;
+        border: none !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+      }
+      .campus-grid {
+        background-image:
+          linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+        background-size: 40px 40px;
+      }
+      .dark .campus-grid {
+        background-image:
+          linear-gradient(
+            to right,
+            rgba(255, 255, 255, 0.05) 1px,
+            transparent 1px
+          ),
+          linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, 0.05) 1px,
+            transparent 1px
+          );
+      }
+
+      @media (max-width: 768px) {
+        .nav-menu {
+          position: fixed;
+          top: 64px; /* Header height */
+          left: -100%;
+          width: 100%;
+          height: calc(100vh - 64px);
+          background-color: #ffffff;
+          flex-direction: column;
+          align-items: center;
+          justify-content: flex-start;
+          padding-top: 2rem;
+          gap: 2rem;
+          transition: left 0.3s ease-in-out;
+          z-index: 1000;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .dark .nav-menu {
+          background-color: #111827;
+        }
+        .nav-menu.active {
+          left: 0;
+        }
+        /* Make header padding consistent on small screens */
+        header {
+          padding-left: 1rem !important;
+          padding-right: 1rem !important;
+        }
+      }
+      
+      @media (min-width: 769px) {
+        .hamburger-btn {
+          display: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-background-light dark:bg-background-dark min-h-screen">
+    <div
+      class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden"
+    >
+      <div class="layout-container flex h-full grow flex-col">
+        <header
+          class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-gray-200 dark:border-b-gray-800 bg-white dark:bg-gray-900 px-10 py-3 sticky top-0 z-[999]"
+        >
+          <div class="flex items-center gap-4 text-primary">
+            <div
+              class="size-8 flex items-center justify-center bg-primary/10 rounded-lg"
+            >
+              <span class="material-symbols-outlined text-primary"
+                >location_on</span
+              >
+            </div>
+            <h2
+              class="text-gray-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]"
+            >
+              GeoAttend
+            </h2>
+          </div>
+          <div class="flex flex-1 justify-end gap-4 md:gap-8">
+            <div class="nav-menu flex items-center gap-9" id="navMenu">
+              <a
+                class="text-primary text-sm font-semibold leading-normal border-b-2 border-primary pb-1"
+                href="#"
+                >Dashboard</a
+              >
+              <!-- <a
+                class="text-gray-600 dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary transition-colors"
+                href="#"
+                >Time Table</a
+              > -->
+              <a
+                class="text-gray-600 dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary transition-colors"
+                href="studenttimetable.html"
+              >
+                Time Table
+              </a>
+
+              <a
+                class="text-gray-600 dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary transition-colors"
+                href="attendance.html"
+                >Attendance</a
+              >
+              <a
+                class="block md:hidden text-red-500 text-sm font-medium leading-normal hover:text-red-700 transition-colors mt-4"
+                href="#"
+                onclick="logout();"
+                >Logout</a
+              >
+            </div>
+            <div class="flex items-center gap-3">
+              <!-- <button
+                class="flex items-center justify-center rounded-lg h-10 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 px-3 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              >
+                <span class="material-symbols-outlined text-[20px]"
+                  >settings</span
+                >
+              </button> -->
+              <a
+                href="settings.html"
+                class="flex items-center justify-center rounded-lg h-10 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 px-3 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              >
+                <span class="material-symbols-outlined text-[20px]"
+                  >settings</span
+                >
+              </a>
+
+              <a href="profile.html" class="flex items-center gap-2 group">
+                <div
+                  class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary/20"
+                  data-alt="User profile avatar showing a college student"
+                  style="
+                    background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuD0KwE-pkMrXbhH2-dt88ioRoEfajhvOYoBWx5mODP6w_Ys--EBwEg3itjyMzt1zrrA1P44lIEHE9GugTt11LG6-tMuKSrEORs474phaT3NiD7nZxdSiHHS9AynrvZVQ7ZSYvWDJh8FjBVaiP0EbgSWyeZxOMJEND3AO7UGZFm73HZb1amztKVL-isSgw8dyMiQi1usz-LYQ_kMkhaW5cnjscmghvjPS1_LLLgptfAh2brmRPlOhuM6Ru6keCnhkG9R6NUyFe9t46Oa&quot;);
+                  "
+                ></div>
+                <span
+                  class="material-symbols-outlined text-gray-500 text-[20px] group-hover:text-primary transition-colors hidden md:block"
+                >
+                  expand_more
+                </span>
+              </a>
+              <button onclick="logout();" class="hidden md:flex items-center justify-center rounded-lg h-10 w-10 bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors" title="Logout">
+                  <span class="material-symbols-outlined text-[20px]">logout</span>
+              </button>
+              
+              <button id="hamburgerBtn" class="hamburger-btn flex items-center justify-center rounded-lg h-10 w-10 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                <span class="material-symbols-outlined text-[20px]">menu</span>
+              </button>
+            </div>
+          </div>
+        </header>
+        <main class="flex-1 flex flex-col items-center">
+          <div
+            class="layout-content-container flex flex-col max-w-[1200px] w-full px-6 py-8 gap-8"
+          >
+            <div class="flex flex-wrap justify-between gap-3 items-end">
+              <div class="flex flex-col gap-2">
+                <p
+                  id="user-name-display"
+                  class="text-gray-900 dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]"
+                >
+                  Welcome back
+                </p>
+                <div class="flex items-center gap-2 text-primary font-medium">
+                  <span id="geofence-status-icon" class="material-symbols-outlined text-sm"
+                    >verified_user</span
+                  >
+                  <p id="geofence-status-text-main" class="text-base">
+                    Locating your position relative to campus geofences...
+                  </p>
+                </div>
+              </div>
+              <div class="text-right">
+                <p id="current-date-display" class="text-gray-500 dark:text-gray-400 text-sm font-medium">
+                  Monday, Jan 23
+                </p>
+                <p id="current-time-display" class="text-gray-900 dark:text-white text-lg font-bold">
+                  09:42 AM
+                </p>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div class="lg:col-span-2 @container">
+                <div
+                  class="relative flex flex-col items-stretch justify-start rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden h-full"
+                >
+                  <div
+                    class="w-full aspect-[21/9] relative bg-gray-100 dark:bg-gray-950 overflow-hidden"
+                    id="student-map-container"
+                  >
+                    <!-- THE LIVE MAP -->
+                    <div id="student-map" class="absolute inset-0 z-0"></div>
+
+                    <!-- Decorative Overlays -->
+                    <div class="absolute inset-0 z-[5] pointer-events-none opacity-40 dark:opacity-20 campus-grid"></div>
+                    
+                    <!-- Overlay status -->
+                    <div class="absolute top-4 left-4 z-[400] bg-white/90 dark:bg-gray-900/90 backdrop-blur px-3 py-1.5 rounded-lg shadow-sm border border-gray-100 dark:border-gray-800 flex items-center gap-2">
+                        <div id="gps-status-dot" class="w-2 h-2 rounded-full bg-slate-400"></div>
+                        <span id="gps-status-text" class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Locating...</span>
+                    </div>
+
+                    <div
+                      class="absolute bottom-4 left-4 z-[400] bg-white/90 dark:bg-gray-900/90 backdrop-blur px-3 py-1.5 rounded-lg text-xs font-bold text-primary flex items-center gap-2 shadow-sm border border-primary/20"
+                    >
+                      <span class="relative flex h-2 w-2">
+                        <span
+                          class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
+                        ></span>
+                        <span
+                          class="relative inline-flex rounded-full h-2 w-2 bg-green-500"
+                        ></span>
+                      </span>
+                      LIVE GPS ACTIVE
+                    </div>
+                  </div>
+                  <div
+                    class="flex w-full grow flex-col items-stretch justify-center gap-4 p-6"
+                  >
+                    <div class="flex flex-col gap-1">
+                      <p
+                        id="checkin-class-name"
+                        class="text-gray-900 dark:text-white text-xl font-bold leading-tight tracking-[-0.015em]"
+                      >
+                        Check-in (Locating...)
+                      </p>
+                      <p
+                        id="checkin-class-details"
+                        class="text-gray-500 dark:text-gray-400 text-sm font-normal"
+                      >
+                        Loading your schedule...
+                      </p>
+                    </div>
+                    <div
+                      class="flex items-center gap-4 justify-between bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg"
+                    >
+                      <div class="flex flex-col">
+                        <p
+                          class="text-gray-400 text-xs font-bold uppercase tracking-wider"
+                        >
+                          Current Coordinates
+                        </p>
+                        <p
+                          id="current-coords"
+                          class="text-gray-700 dark:text-gray-200 text-sm font-mono font-medium"
+                        >
+                          -
+                        </p>
+                      </div>
+                      <button
+                        id="checkin-btn"
+                        class="flex min-w-[160px] cursor-pointer items-center justify-center gap-2 rounded-lg h-12 px-6 bg-primary text-white text-base font-bold transition-all hover:bg-blue-700 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 shadow-sm"
+                      >
+                        <span class="material-symbols-outlined">touch_app</span>
+                        <span class="truncate">Check In Now</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="flex flex-col gap-6">
+                <div
+                  class="flex flex-col gap-2 rounded-xl p-6 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm"
+                >
+                  <div class="flex justify-between items-start">
+                    <p
+                      class="text-gray-500 dark:text-gray-400 text-sm font-semibold uppercase tracking-wide"
+                    >
+                      Total Classes
+                    </p>
+                    <span class="material-symbols-outlined text-primary/40"
+                      >school</span
+                    >
+                  </div>
+                  <p
+                    id="total-classes-kpi"
+                    class="text-gray-900 dark:text-white tracking-tight text-3xl font-black leading-tight"
+                  >
+                    -
+                  </p>
+                  <div class="flex items-center gap-1">
+                    <span
+                      class="material-symbols-outlined text-green-500 text-sm"
+                      >trending_up</span
+                    >
+                    <p
+                      class="text-green-600 dark:text-green-500 text-sm font-bold leading-normal"
+                    >
+                      +2% this month
+                    </p>
+                  </div>
+                </div>
+                <div
+                  class="flex flex-col gap-2 rounded-xl p-6 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm"
+                >
+                  <div class="flex justify-between items-start">
+                    <p
+                      class="text-gray-500 dark:text-gray-400 text-sm font-semibold uppercase tracking-wide"
+                    >
+                      Attendance
+                    </p>
+                    <span class="material-symbols-outlined text-primary/40"
+                      >bar_chart</span
+                    >
+                  </div>
+                  <p
+                    id="attendance-percent-kpi"
+                    class="text-gray-900 dark:text-white tracking-tight text-3xl font-black leading-tight"
+                  >
+                    -
+                  </p>
+                  <div class="flex items-center gap-1">
+                    <span
+                      class="material-symbols-outlined text-green-500 text-sm"
+                      >trending_up</span
+                    >
+                    <p
+                      class="text-green-600 dark:text-green-500 text-sm font-bold leading-normal"
+                    >
+                      +1.2% overall
+                    </p>
+                  </div>
+                </div>
+                <div
+                  class="flex flex-col gap-2 rounded-xl p-6 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm"
+                >
+                  <div class="flex justify-between items-start">
+                    <p
+                      class="text-gray-500 dark:text-gray-400 text-sm font-semibold uppercase tracking-wide"
+                    >
+                      Days Present
+                    </p>
+                    <span class="material-symbols-outlined text-primary/40"
+                      >event_available</span
+                    >
+                  </div>
+                  <div>
+                    <p
+                      class="text-[#4c669a] dark:text-gray-400 text-sm font-medium leading-normal"
+                    >
+                      Present Days
+                    </p>
+                    <p
+                      id="days-present"
+                      class="text-[#0d121b] dark:text-white text-2xl font-bold leading-tight tracking-tight"
+                    >
+                      -
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="flex flex-col gap-4">
+              <div class="flex items-center justify-between px-2">
+                <h2
+                  class="text-gray-900 dark:text-white text-2xl font-black leading-tight tracking-[-0.015em]"
+                >
+                  Recent Activity
+                </h2>
+                <a href="attendance.html" class="text-primary text-sm font-bold hover:underline">
+                  View All History
+                </a>
+              </div>
+              <div
+                class="overflow-x-auto overflow-y-hidden rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm"
+              >
+                <table class="w-full min-w-[600px] text-left border-collapse">
+                  <thead>
+                    <tr class="bg-gray-50 dark:bg-gray-800/50">
+                      <th
+                        class="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                      >
+                        Subject Name
+                      </th>
+                      <th
+                        class="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                      >
+                        Date &amp; Time
+                      </th>
+                      <th
+                        class="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                      >
+                        Location
+                      </th>
+                      <th
+                        class="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                      >
+                        Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                    <tr
+                      class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors"
+                    >
+                      <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                          <div
+                            class="w-8 h-8 rounded bg-primary/10 flex items-center justify-center"
+                          >
+                            <span
+                              class="material-symbols-outlined text-primary text-sm"
+                              >code</span
+                            >
+                          </div>
+                          <p
+                            class="text-gray-900 dark:text-white font-semibold"
+                          >
+                            AI
+                          </p>
+                        </div>
+                      </td>
+                      <td
+                        class="px-6 py-4 text-gray-600 dark:text-gray-300 text-sm"
+                      >
+                        Today, 08:30 AM
+                      </td>
+                      <td
+                        class="px-6 py-4 text-gray-500 dark:text-gray-400 text-sm"
+                      >
+                        Lab 005-A
+                      </td>
+                      <td class="px-6 py-4">
+                        <span
+                          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                        >
+                          Present
+                        </span>
+                      </td>
+                    </tr>
+                    <tr
+                      class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors"
+                    >
+                      <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                          <div
+                            class="w-8 h-8 rounded bg-primary/10 flex items-center justify-center"
+                          >
+                            <span
+                              class="material-symbols-outlined text-primary text-sm"
+                              >functions</span
+                            >
+                          </div>
+                          <p
+                            class="text-gray-900 dark:text-white font-semibold"
+                          >
+                            TOC
+                          </p>
+                        </div>
+                      </td>
+                      <td
+                        class="px-6 py-4 text-gray-600 dark:text-gray-300 text-sm"
+                      >
+                        Yesterday, 12:30 AM
+                      </td>
+                      <td
+                        class="px-6 py-4 text-gray-500 dark:text-gray-400 text-sm"
+                      >
+                        Lab 106-B
+                      </td>
+                      <td class="px-6 py-4">
+                        <span
+                          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                        >
+                          Present
+                        </span>
+                      </td>
+                    </tr>
+                    <tr
+                      class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors"
+                    >
+                      <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                          <div
+                            class="w-8 h-8 rounded bg-primary/10 flex items-center justify-center"
+                          >
+                            <span
+                              class="material-symbols-outlined text-primary text-sm"
+                              >data_object</span
+                            >
+                          </div>
+                          <p
+                            class="text-gray-900 dark:text-white font-semibold"
+                          >
+                            FOE
+                          </p>
+                        </div>
+                      </td>
+                      <td
+                        class="px-6 py-4 text-gray-600 dark:text-gray-300 text-sm"
+                      >
+                        Jan 21, 01:20 PM
+                      </td>
+                      <td
+                        class="px-6 py-4 text-gray-500 dark:text-gray-400 text-sm"
+                      >
+                        New Building, 209
+                      </td>
+                      <td class="px-6 py-4">
+                        <span
+                          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                        >
+                          Absent
+                        </span>
+                      </td>
+                    </tr>
+                    <tr
+                      class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors"
+                    >
+                      <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                          <div
+                            class="w-8 h-8 rounded bg-primary/10 flex items-center justify-center"
+                          >
+                            <span
+                              class="material-symbols-outlined text-primary text-sm"
+                              >translate</span
+                            >
+                          </div>
+                          <p
+                            class="text-gray-900 dark:text-white font-semibold"
+                          >
+                            ITIM
+                          </p>
+                        </div>
+                      </td>
+                      <td
+                        class="px-6 py-4 text-gray-600 dark:text-gray-300 text-sm"
+                      >
+                        Jan 20, 10:10 AM
+                      </td>
+                      <td
+                        class="px-6 py-4 text-gray-500 dark:text-gray-400 text-sm"
+                      >
+                        New Building, 003
+                      </td>
+                      <td class="px-6 py-4">
+                        <span
+                          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                        >
+                          Present
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </main>
+        <footer
+          class="border-t border-gray-200 dark:border-gray-800 py-6 text-center text-gray-400 dark:text-gray-500 text-xs"
+        >
+          © 2026 GeoAttend Developed by Parthen04. All rights reserved. •
+          Privacy Policy • Support
+        </footer>
+      </div>
+    </div>
+
+    <style>
+      /* Responsive CSS for Main Layout and Hamburger Menu */
+      @media (max-width: 768px) {
+        .nav-menu {
+          position: fixed;
+          top: 64px; /* Header height */
+          left: -100%;
+          width: 100%;
+          height: calc(100vh - 64px);
+          background-color: #ffffff;
+          flex-direction: column;
+          align-items: center;
+          justify-content: flex-start;
+          padding-top: 2rem;
+          gap: 2rem;
+          transition: left 0.3s ease-in-out;
+          z-index: 40;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .dark .nav-menu {
+          background-color: #111827; /* dark gray 900 */
+        }
+        .nav-menu.active {
+          left: 0;
+        }
+        /* Make header padding consistent on small screens */
+        header {
+          padding-left: 1rem !important;
+          padding-right: 1rem !important;
+        }
+        .layout-content-container {
+          padding-left: 1rem !important;
+          padding-right: 1rem !important;
+        }
+      }
+      
+      @media (min-width: 769px) {
+        .hamburger-btn {
+          display: none !important;
+        }
+      }
+    </style>
+
+    <!-- Custom Location Permission Modal -->
+    <div id="location-modal" class="fixed inset-0 z-[60] hidden">
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all border border-gray-100 dark:border-gray-800 animate-in fade-in zoom-in duration-300">
+                <div class="p-6">
+                    <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <span class="material-symbols-outlined text-3xl text-primary">location_on</span>
+                    </div>
+                    <h3 class="text-2xl font-black text-gray-900 dark:text-white text-center mb-2 tracking-tight">Location Required</h3>
+                    <p class="text-gray-500 dark:text-gray-400 text-center text-sm leading-relaxed mb-8">
+                        To mark your attendance accurately, GeoAttend needs to verify your presence on campus. Your privacy is protected and location data is only used for attendance.
+                    </p>
+                    <div class="flex flex-col gap-3">
+                        <button id="allow-always" class="w-full bg-primary text-white h-12 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0">
+                            Allow While Using Site
+                        </button>
+                        <button id="allow-session" class="w-full bg-primary/10 text-primary h-12 rounded-xl font-bold hover:bg-primary/20 transition-all">
+                            Allow This Time
+                        </button>
+                        <button id="deny-location" class="w-full bg-transparent text-gray-400 h-12 rounded-xl font-medium hover:text-gray-600 dark:hover:text-gray-200 transition-all">
+                            Do Not Allow
+                        </button>
+                    </div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-800/50 p-4 border-t border-gray-100 dark:border-gray-800">
+                    <div class="flex items-center gap-2 justify-center text-[10px] text-gray-400 font-medium uppercase tracking-widest">
+                        <span class="material-symbols-outlined text-xs">shield</span>
+                        Encrypted & Privacy Focused
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GPS Hardware Check Prompt -->
+    <div id="gps-prompt" class="fixed inset-x-0 bottom-8 z-[70] hidden px-4">
+        <div class="max-w-md mx-auto bg-red-600 text-white p-4 rounded-xl shadow-2xl flex items-center justify-between gap-4 border border-red-500 animate-bounce">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined">sensors_off</span>
+                <div>
+                    <p class="font-bold text-sm">GPS Hardware Disabled</p>
+                    <p class="text-[10px] opacity-90">Please turn on your system GPS/Location services.</p>
+                </div>
+            </div>
+            <button onclick="checkGPSAgain()" class="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg text-xs font-bold transition-all uppercase">Retry</button>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script type="module">
+      import { db } from "../firebase-config.js";
+      import { doc, getDoc, updateDoc, serverTimestamp, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+      const userNameDisplay = document.getElementById('user-name-display');
+      const userId = localStorage.getItem('geoattend-userId') || sessionStorage.getItem('geoattend-userId');
+      const session = localStorage.getItem('geoattend-session') || sessionStorage.getItem('geoattend-session');
+      const recentHistoryTableBody = document.querySelector('tbody');
+      
+      const PERMISSION_KEY_PERSISTENT = 'geoattend-location-consent';
+      const PERMISSION_KEY_SESSION = 'geoattend-location-consent-session';
+      
+      const statusDot = document.getElementById('gps-status-dot');
+      const statusText = document.getElementById('gps-status-text');
+      const locationModal = document.getElementById('location-modal');
+      const gpsPrompt = document.getElementById('gps-prompt');
+      
+      const campusCenter = [23.5295, 72.4577];
+      let map, userMarker;
+      let lastKnownPosition = null;
+      
+      let customMarkers = {};
+      const customMarkerGroup = L.layerGroup();
+      let geofenceLayers = {};
+      const fenceLabelGroup = L.layerGroup();
+      let activeGeofences = {}; // Store raw geofence data for distance checks
+
+      // Helper: Simple deterministic pseudo-random number generator
+      function seededRandom(seed) {
+          var x = Math.sin(seed++) * 10000;
+          return x - Math.floor(x);
+      }
+      
+      function hashString(str) {
+          let hash = 0;
+          for (let i = 0; i < str.length; i++) {
+              let char = str.charCodeAt(i);
+              hash = ((hash << 5) - hash) + char;
+              hash = hash & hash;
+          }
+          return Math.abs(hash);
+      }
+
+      async function fetchUserData() {
+        if (!userId || session !== 'student') {
+          window.location.href = '../loginpage.html';
+          return;
+        }
+
+        // Initialize map immediately at campus center
+        if (!map) {
+            initMap(23.5295, 72.4577);
+        }
+
+        try {
+            const userDoc = await getDoc(doc(db, "users", userId));
+            let userData = userDoc.exists() ? userDoc.data() : { name: 'Student' };
+            
+            const sysId = userData.universityId || userId;
+            const batchStr = (userData.batch || '').trim().toUpperCase();
+            const seed = hashString(sysId + batchStr);
+            
+            userNameDisplay.textContent = `Welcome back, ${userData.name || 'Student'}`;
+            
+            // Update Dashboard Stats (Deterministic Fallbacks)
+            
+            let totalClasses = userData.totalClasses;
+            let attendancePercentage = userData.attendancePercentage;
+            let daysPresent = userData.daysPresent;
+            
+            if (!totalClasses) {
+                totalClasses = Math.floor(seededRandom(seed) * 40) + 30;
+                attendancePercentage = Math.floor(seededRandom(seed + 1) * 38) + 60;
+                daysPresent = Math.floor((attendancePercentage / 100) * totalClasses);
+            }
+            
+            document.getElementById('total-classes-kpi').textContent = totalClasses;
+            document.getElementById('attendance-percent-kpi').textContent = attendancePercentage + '%';
+            document.getElementById('days-present').textContent = daysPresent;
+
+            // --- TIMETABLE LOGIC ---
+            const now = new Date();
+            const day = now.getDay();
+            const currentTimeMinutes = now.getHours() * 60 + now.getMinutes();
+
+            const timeSlots = [
+                { start: "08:30", end: "09:15", label: "Slot 1" },
+                { start: "09:15", end: "10:10", label: "Slot 2" },
+                { start: "10:10", end: "10:45", label: "Short Break", isBreak: true },
+                { start: "10:45", end: "11:40", label: "Slot 3" },
+                { start: "11:40", end: "12:30", label: "Lunch Break", isBreak: true },
+                { start: "12:30", end: "14:10", label: "Lab Session" }
+            ];
+
+            function timeToMinutes(timeStr) {
+                const [h, m] = timeStr.split(':').map(Number);
+                return h * 60 + m;
+            }
+
+            let subjects = ['Programming', 'Mathematics', 'Physics', 'Digital Logic'];
+            if (batchStr) {
+                 const match = batchStr.match(/^(\d+)([A-Z]+)/);
+                 if (match) {
+                     const sem = parseInt(match[1]);
+                     const branch = match[2];
+                     if (branch === 'CE' || branch === 'IT') {
+                         if (sem <= 2) subjects = ['C Programming', 'Basic Electronics', 'Calculus', 'Physics'];
+                         else if (sem <= 4) subjects = ['Data Structures', 'DBMS', 'Computer Networks', 'Java'];
+                         else if (sem <= 6) subjects = ['AI', 'Theory of Computation', 'Cyber Security', 'Software Engineering'];
+                         else subjects = ['Cloud Computing', 'Machine Learning', 'Blockchain', 'Big Data'];
+                     }
+                 }
+            }
+
+            let currentClass = null;
+            let nextClass = null;
+
+            if (day >= 1 && day <= 5) {
+                timeSlots.forEach((slot, i) => {
+                    const startMin = timeToMinutes(slot.start);
+                    const endMin = timeToMinutes(slot.end);
+                    
+                    if (currentTimeMinutes >= startMin && currentTimeMinutes < endMin) {
+                        if (!slot.isBreak) {
+                            const subjIdx = Math.floor(seededRandom(seed + i) * subjects.length);
+                            const isLab = slot.label === "Lab Session";
+                            
+                            // Room Logic based on day and index to match timetable
+                            let room = "Room 209";
+                            if (isLab) {
+                                const labRooms = { 1: "Lab-106", 2: "Lab-108", 3: "Lab-108", 4: "Online", 5: "Self Study" };
+                                room = labRooms[day] || "Lab-106";
+                            }
+                            
+                            const isOnline = room === "Online" || seededRandom(seed + i + 100) > 0.8;
+                            
+                            currentClass = { 
+                                name: subjects[subjIdx] + (isLab ? ' Lab' : ''), 
+                                end: slot.end, 
+                                room: isOnline ? "Online" : room,
+                                isOnline: isOnline
+                            };
+                        } else {
+                            currentClass = { name: slot.label, isBreak: true };
+                        }
+                    } else if (currentTimeMinutes < startMin && !nextClass && !slot.isBreak) {
+                        const subjIdx = Math.floor(seededRandom(seed + i) * subjects.length);
+                        const isLab = slot.label === "Lab Session";
+                        nextClass = { name: subjects[subjIdx] + (isLab ? ' Lab' : ''), start: slot.start };
+                    }
+                });
+            }
+
+            const classNameElem = document.getElementById('checkin-class-name');
+            const classDetailsElem = document.getElementById('checkin-class-details');
+            const checkinBtn = document.getElementById('checkin-btn');
+
+            if (currentClass && !currentClass.isBreak) {
+                classNameElem.textContent = `Check-in for ${currentClass.name}`;
+                classDetailsElem.textContent = `${currentClass.room} • Ongoing until ${currentClass.end}`;
+                checkinBtn.disabled = false;
+                checkinBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                checkinBtn.setAttribute('data-lecture-active', 'true');
+                if (currentClass.isOnline) {
+                    checkinBtn.setAttribute('data-online-lecture', 'true');
+                } else {
+                    checkinBtn.removeAttribute('data-online-lecture');
+                }
+            } else if (currentClass && currentClass.isBreak) {
+                classNameElem.textContent = `It's ${currentClass.name}`;
+                classDetailsElem.textContent = nextClass ? `Next Class: ${nextClass.name} at ${nextClass.start}` : "No more classes today";
+                checkinBtn.disabled = true;
+                checkinBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                checkinBtn.removeAttribute('data-lecture-active');
+                checkinBtn.removeAttribute('data-online-lecture');
+            } else if (nextClass) {
+                classNameElem.textContent = `Upcoming: ${nextClass.name}`;
+                classDetailsElem.textContent = `Starts at ${nextClass.start} • Follow your timetable`;
+                checkinBtn.disabled = true;
+                checkinBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                checkinBtn.removeAttribute('data-lecture-active');
+                checkinBtn.removeAttribute('data-online-lecture');
+            } else {
+                classNameElem.textContent = "No active classes";
+                classDetailsElem.textContent = "Check your weekly timetable for full schedule";
+                checkinBtn.disabled = true;
+                checkinBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                checkinBtn.removeAttribute('data-lecture-active');
+                checkinBtn.removeAttribute('data-online-lecture');
+            }
+
+            // Recent History Update (Static/Simulated)
+            if (recentHistoryTableBody) {
+                recentHistoryTableBody.innerHTML = `
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
+                      <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                          <div class="w-8 h-8 rounded bg-primary/10 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-primary text-sm">code</span>
+                          </div>
+                          <p class="text-gray-900 dark:text-white font-semibold">Programming</p>
+                        </div>
+                      </td>
+                      <td class="px-6 py-4 text-gray-600 dark:text-gray-300 text-sm">Today, 08:30 AM</td>
+                      <td class="px-6 py-4 text-gray-500 dark:text-gray-400 text-sm">Lab 005-A</td>
+                      <td class="px-6 py-4"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">Present</span></td>
+                    </tr>`;
+            }
+            
+            if (lastKnownPosition) {
+                updateUserMarker(lastKnownPosition.lat, lastKnownPosition.lng);
+            }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      }
+
+
+      function initMap(lat, lng) {
+          if (map) return;
+          
+          map = L.map('student-map', {
+              zoomControl: false,
+              attributionControl: false,
+              maxZoom: 24
+          }).setView([lat, lng], 17);
+
+          L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+              maxZoom: 24,
+              maxNativeZoom: 19
+          }).addTo(map);
+
+          // Permanent Campus Marker
+          const guniIcon = L.divIcon({
+              className: 'guni-marker',
+              html: `<div class="flex flex-col items-center">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2942/2942821.png" alt="University" class="w-8 h-8 rounded-full shadow-lg border-2 border-primary bg-white object-cover">
+                        <span class="text-[10px] font-black bg-primary text-white px-2 py-0.5 rounded shadow-lg mt-1 whitespace-nowrap uppercase tracking-tighter">Ganpat University</span>
+                     </div>`,
+              iconSize: [100, 50],
+              iconAnchor: [50, 40]
+          });
+          L.marker(campusCenter, { icon: guniIcon, zIndexOffset: 900 }).addTo(map);
+          L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+          map.on('zoomend', () => {
+              const currentZoom = map.getZoom();
+              if (currentZoom >= 17) {
+                  if (!map.hasLayer(customMarkerGroup)) customMarkerGroup.addTo(map);
+              } else {
+                  if (map.hasLayer(customMarkerGroup)) map.removeLayer(customMarkerGroup);
+              }
+              if (currentZoom >= 18) {
+                  if (!map.hasLayer(fenceLabelGroup)) fenceLabelGroup.addTo(map);
+              } else {
+                  if (map.hasLayer(fenceLabelGroup)) map.removeLayer(fenceLabelGroup);
+              }
+          });
+
+          // Helper to strip "Class " or "Classroom " from names
+          const formatDisplayName = (name) => {
+              if (!name) return "";
+              return name.replace(/^(Classroom|Class)\s+/i, '').trim();
+          };
+
+          // Sync Custom Markers (Read-Only)
+          onSnapshot(collection(db, "custom_markers"), (snapshot) => {
+              snapshot.docChanges().forEach((change) => {
+                  const data = change.doc.data();
+                  const id = change.doc.id;
+
+                  if (change.type === "added" || change.type === "modified") {
+                      if (customMarkers[id]) customMarkerGroup.removeLayer(customMarkers[id]);
+
+                      const displayName = formatDisplayName(data.name);
+
+                      const markerIcon = L.divIcon({
+                          className: 'custom-marker-with-label',
+                          html: `<div class="flex flex-col items-center drop-shadow-sm">
+                                    <img src="https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png" class="w-[25px] h-[41px]" alt="Marker">
+                                    <span class="text-[10px] font-bold bg-white/95 text-slate-800 px-1.5 py-0.5 rounded shadow-sm border border-slate-200 mt-1 whitespace-nowrap truncate max-w-[120px] text-center">${displayName}</span>
+                                 </div>`,
+                          iconSize: [120, 65],
+                          iconAnchor: [60, 41]
+                      });
+
+                      const marker = L.marker([data.lat, data.lng], { icon: markerIcon });
+                      marker.bindPopup(`<b>${displayName}</b>`);
+                      customMarkers[id] = marker;
+                      customMarkerGroup.addLayer(marker);
+                      
+                      if (map.getZoom() >= 17 && !map.hasLayer(customMarkerGroup)) {
+                          customMarkerGroup.addTo(map);
+                      }
+                  }
+
+                  if (change.type === "removed") {
+                      if (customMarkers[id]) {
+                          customMarkerGroup.removeLayer(customMarkers[id]);
+                          delete customMarkers[id];
+                      }
+                  }
+              });
+          });
+
+          // Sync Geofences (Read-Only)
+          onSnapshot(collection(db, "geofences"), (snapshot) => {
+              snapshot.docChanges().forEach((change) => {
+                  const data = change.doc.data();
+                  const id = change.doc.id;
+
+                  if (change.type === "added" || change.type === "modified") {
+                      if (geofenceLayers[id]) {
+                          map.removeLayer(geofenceLayers[id].circle);
+                          fenceLabelGroup.removeLayer(geofenceLayers[id].label);
+                      }
+
+                      const displayName = formatDisplayName(data.name);
+
+                      const circle = L.circle([data.lat, data.lng], {
+                          color: '#3b82f6',
+                          fillColor: '#3b82f6',
+                          fillOpacity: 0.1,
+                          weight: 2,
+                          dashArray: '5, 5'
+                      }).addTo(map);
+
+                      circle.bindPopup(`<b>${displayName}</b><br><span class="text-xs text-slate-500">${data.type || 'Geofence'}</span>`);
+
+                      const labelIcon = L.divIcon({
+                          className: 'fence-label-icon',
+                          html: `<div class="text-[10px] font-bold text-blue-700 bg-white/50 px-1 rounded backdrop-blur-sm border border-blue-200">${displayName}</div>`,
+                          iconSize: [100, 20],
+                          iconAnchor: [50, 10]
+                      });
+                      
+                      const label = L.marker([data.lat, data.lng], { icon: labelIcon });
+                      fenceLabelGroup.addLayer(label);
+
+                      geofenceLayers[id] = { circle, label };
+                      activeGeofences[id] = { lat: data.lat, lng: data.lng, radius: data.radius || 50, name: displayName };
+                      
+                      if (map.getZoom() >= 18 && !map.hasLayer(fenceLabelGroup)) {
+                          fenceLabelGroup.addTo(map);
+                      }
+                  }
+                  
+                  if (change.type === "removed") {
+                      if (geofenceLayers[id]) {
+                          map.removeLayer(geofenceLayers[id].circle);
+                          fenceLabelGroup.removeLayer(geofenceLayers[id].label);
+                          delete geofenceLayers[id];
+                          delete activeGeofences[id];
+                      }
+                  }
+              });
+          });
+      }
+
+      function updateUserMarker(lat, lng) {
+          if (!map) {
+              initMap(lat, lng);
+          }
+
+          if (!userMarker) {
+              const userIcon = L.divIcon({
+                  className: 'custom-user-marker',
+                  html: `
+                    <div class="relative flex items-center justify-center">
+                        <div class="absolute w-8 h-8 bg-primary/20 rounded-full animate-ping"></div>
+                        <div class="relative w-4 h-4 bg-primary rounded-full border-2 border-white dark:border-gray-900 shadow-lg"></div>
+                    </div>`,
+                  iconSize: [32, 32],
+                  iconAnchor: [16, 16]
+              });
+              userMarker = L.marker([lat, lng], { icon: userIcon }).addTo(map);
+              userMarker.bindPopup("<b>You are here</b>").openPopup();
+          } else {
+              userMarker.setLatLng([lat, lng]);
+          }
+          
+          lastKnownPosition = { lat, lng };
+          map.panTo([lat, lng]);
+          statusDot.className = "w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]";
+          statusText.textContent = "Live • Tracking Active";
+
+          // --- Geofence Detection ---
+          const statusIcon = document.getElementById('geofence-status-icon');
+          const statusTextMain = document.getElementById('geofence-status-text-main');
+          const checkinBtn = document.getElementById('checkin-btn');
+          
+          let currentFence = null;
+          Object.values(activeGeofences).forEach(fence => {
+              const distance = map.distance([lat, lng], [fence.lat, fence.lng]);
+              if (distance <= fence.radius) {
+                  currentFence = fence;
+              }
+          });
+
+          if (currentFence) {
+              statusIcon.textContent = "verified_user";
+              statusIcon.className = "material-symbols-outlined text-sm text-emerald-500";
+              statusTextMain.textContent = `You are currently within ${currentFence.name}. Ready to mark attendance.`;
+              statusTextMain.className = "text-base text-emerald-600 dark:text-emerald-400 font-bold";
+              
+              if (checkinBtn && !checkinBtn.hasAttribute('data-disabled-by-schedule')) {
+                  checkinBtn.disabled = false;
+                  checkinBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+              }
+          } else {
+              const isLectureActive = checkinBtn && checkinBtn.hasAttribute('data-lecture-active');
+              const isOnlineLecture = checkinBtn && checkinBtn.hasAttribute('data-online-lecture');
+              
+              if (isOnlineLecture) {
+                  statusIcon.textContent = "language";
+                  statusIcon.className = "material-symbols-outlined text-sm text-blue-500";
+                  statusTextMain.textContent = "Online Lecture Active. You can join from anywhere! 🌐";
+                  statusTextMain.className = "text-base text-blue-600 dark:text-blue-400 font-bold";
+                  
+                  if (checkinBtn && !checkinBtn.hasAttribute('data-disabled-by-schedule')) {
+                      checkinBtn.disabled = false;
+                      checkinBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                  }
+              } else if (isLectureActive) {
+                  statusIcon.textContent = "GPP_BAD";
+                  statusIcon.className = "material-symbols-outlined text-sm text-red-500";
+                  statusTextMain.textContent = "You are not within any admin-defined geofence. Please move to your designated classroom.";
+                  statusTextMain.className = "text-base text-red-600 dark:text-red-400 font-medium";
+                  
+                  if (checkinBtn) {
+                      checkinBtn.disabled = true;
+                      checkinBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                  }
+              } else {
+                  statusIcon.textContent = "mimo";
+                  statusIcon.className = "material-symbols-outlined text-sm text-primary/60";
+                  statusTextMain.textContent = "No lectures scheduled currently. Enjoy your break! ✨";
+                  statusTextMain.className = "text-base text-gray-500 dark:text-gray-400 font-medium";
+                  
+                  if (checkinBtn) {
+                      checkinBtn.disabled = true;
+                      checkinBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                  }
+              }
+          }
+          
+          const coordsElem = document.getElementById('current-coords');
+          if (coordsElem) {
+              coordsElem.textContent = `${lat.toFixed(4)}° N, ${lng.toFixed(4)}° W`;
+          }
+          
+          gpsPrompt.classList.add('hidden');
+      }
+
+      function startLocationTracking() {
+          if (!navigator.geolocation) {
+              statusText.textContent = "GPS Not Supported";
+              return;
+          }
+
+          const hasConsent = localStorage.getItem(PERMISSION_KEY_PERSISTENT) === 'granted' || 
+                             sessionStorage.getItem(PERMISSION_KEY_SESSION) === 'granted';
+
+          if (!hasConsent) {
+              locationModal.classList.remove('hidden');
+              statusText.textContent = "Awaiting Permission";
+              return;
+          }
+
+          if (userId && session === 'student') {
+              navigator.geolocation.watchPosition(
+                  async (position) => {
+                      const lat = position.coords.latitude;
+                      const lng = position.coords.longitude;
+                      
+                      updateUserMarker(lat, lng);
+
+                      try {
+                          await updateDoc(doc(db, "users", userId), {
+                              lastPosition: {
+                                  lat: lat,
+                                  lng: lng,
+                                  timestamp: serverTimestamp()
+                              }
+                          });
+                      } catch (err) {
+                          console.error("Error updating location:", err);
+                      }
+                  },
+                  (error) => {
+                      console.error("Geolocation error:", error.message);
+                      statusText.textContent = "GPS Error";
+                      statusDot.className = "w-2 h-2 rounded-full bg-red-500";
+                      
+                      // Handle hardware off
+                      if (error.code === 1 || error.code === 3) {
+                          gpsPrompt.classList.remove('hidden');
+                      }
+                  },
+                  { enableHighAccuracy: true, maximumAge: 30000, timeout: 27000 }
+              );
+          }
+      }
+
+      window.checkGPSAgain = function() {
+          gpsPrompt.classList.add('hidden');
+          startLocationTracking();
+      };
+
+      // Modal Button Actions
+      document.getElementById('allow-always').addEventListener('click', () => {
+          localStorage.setItem(PERMISSION_KEY_PERSISTENT, 'granted');
+          locationModal.classList.add('hidden');
+          startLocationTracking();
+      });
+
+      document.getElementById('allow-session').addEventListener('click', () => {
+          sessionStorage.setItem(PERMISSION_KEY_SESSION, 'granted');
+          locationModal.classList.add('hidden');
+          startLocationTracking();
+      });
+
+      document.getElementById('deny-location').addEventListener('click', () => {
+          locationModal.classList.add('hidden');
+          statusText.textContent = "Tracking Disabled";
+          statusDot.className = "w-2 h-2 rounded-full bg-gray-400";
+      });
+
+      window.logout = function() {
+        localStorage.removeItem('geoattend-session');
+        localStorage.removeItem('geoattend-userId');
+        sessionStorage.removeItem('geoattend-session');
+        sessionStorage.removeItem('geoattend-userId');
+        window.location.href = '../loginpage.html';
+      };
+
+      const hamburgerBtn = document.getElementById('hamburgerBtn');
+      const navMenu = document.getElementById('navMenu');
+      if (hamburgerBtn) {
+          const menuIcon = hamburgerBtn.querySelector('.material-symbols-outlined');
+          hamburgerBtn.addEventListener('click', () => {
+              navMenu.classList.toggle('active');
+              const isActive = navMenu.classList.contains('active');
+              if (menuIcon) menuIcon.textContent = isActive ? 'close' : 'menu';
+              document.body.style.overflow = isActive ? 'hidden' : '';
+          });
+      }
+
+      // Global Theme Management
+      function initTheme() {
+        let savedTheme = localStorage.getItem('geoattend-theme');
+        if (!savedTheme) {
+            savedTheme = 'light';
+            localStorage.setItem('geoattend-theme', 'light');
+        }
+        if (savedTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light');
+        } else {
+            document.documentElement.classList.add('light');
+            document.documentElement.classList.remove('dark');
+        }
+      }
+
+      function updateDateTime() {
+          const dateElem = document.getElementById('current-date-display');
+          const timeElem = document.getElementById('current-time-display');
+          
+          if (!dateElem || !timeElem) return;
+
+          const now = new Date();
+          
+          // Format Date: Monday, Jan 23
+          const dateOptions = { weekday: 'long', month: 'short', day: 'numeric' };
+          dateElem.textContent = now.toLocaleDateString('en-US', dateOptions);
+
+          // Format Time: 09:42 AM
+          const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: true };
+          timeElem.textContent = now.toLocaleTimeString('en-US', timeOptions);
+      }
+
+      initTheme();
+      updateDateTime();
+      setInterval(updateDateTime, 60000); // Update every minute
+      fetchUserData(); // Call to fetch user data and populate dynamic content
+      startLocationTracking(); // Call to start GPS tracking
+    </script>
+  </body>
+</html>

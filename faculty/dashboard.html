@@ -1,0 +1,1027 @@
+<!doctype html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Faculty Attendance Dashboard | GeoAttend</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#135bec",
+              "background-light": "#f6f6f8",
+              "background-dark": "#101622",
+            },
+            fontFamily: {
+              display: ["Inter"],
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings:
+          "FILL" 0,
+          "wght" 400,
+          "GRAD" 0,
+          "opsz" 20;
+      }
+      @keyframes pulse-ring {
+        0% { transform: scale(0.33); opacity: 1; }
+        80%, 100% { opacity: 0; }
+      }
+      @keyframes pulse-dot {
+        0% { transform: scale(0.8); }
+        50% { transform: scale(1); }
+        100% { transform: scale(0.8); }
+      }
+      .pulse-ring { animation: pulse-ring 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+      .pulse-dot { animation: pulse-dot 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+      .fence-label-icon {
+        background: transparent !important;
+        border: none !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+      }
+      
+      .campus-grid {
+        background-image:
+          linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+        background-size: 40px 40px;
+      }
+      .dark .campus-grid {
+        background-image:
+          linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+      }
+
+      .hamburger-btn {
+        display: none;
+        z-index: 110;
+        position: relative;
+      }
+      @media (max-width: 768px) {
+        .hamburger-btn {
+          display: flex;
+        }
+        .header-actions {
+          gap: 0.5rem;
+        }
+        .nav-menu {
+          position: fixed;
+          top: 64px; /* Header height */
+          left: -100%;
+          width: 100%;
+          height: calc(100vh - 64px);
+          background-color: #ffffff;
+          flex-direction: column;
+          align-items: center;
+          justify-content: flex-start;
+          padding-top: 2rem;
+          gap: 2rem;
+          transition: left 0.3s ease-in-out;
+          z-index: 1000;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .dark .nav-menu {
+          background-color: #111827;
+        }
+        .nav-menu.active {
+          left: 0;
+        }
+      }
+      @media (min-width: 769px) {
+        .hamburger-btn {
+          display: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body
+    class="bg-background-light dark:bg-background-dark font-display text-[#0d121b] dark:text-white transition-colors duration-200"
+  >
+    <div class="relative flex min-h-screen flex-col">
+      <header
+        class="sticky top-0 z-[999] w-full border-b border-solid border-[#e7ebf3] dark:border-gray-800 bg-white dark:bg-background-dark px-6 py-3"
+      >
+        <div class="mx-auto flex max-w-7xl items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="text-primary flex items-center justify-center">
+              <span class="material-symbols-outlined text-3xl font-bold !fill-1"
+                >location_on</span
+              >
+            </div>
+            <h2 class="text-xl font-black leading-tight tracking-tight">
+              GeoAttend
+            </h2>
+          </div>
+          <div class="flex items-center gap-8">
+            <nav class="nav-menu flex items-center gap-8" id="navMenu">
+              <a
+                class="text-primary text-sm font-semibold leading-normal md:border-b-2 md:border-primary pb-1"
+                href="#"
+                >Dashboard</a
+              >
+              <a
+                class="text-[#4c669a] dark:text-gray-400 hover:text-primary text-sm font-medium leading-normal transition-colors"
+                href="timetable.html"
+                >Time Table</a
+              >
+              <a
+                class="text-[#4c669a] dark:text-gray-400 hover:text-primary text-sm font-medium leading-normal transition-colors"
+                href="analytics.html"
+                >Analytics</a
+              >
+              <a
+                class="block md:hidden text-red-500 text-sm font-medium leading-normal hover:text-red-700 transition-colors mt-4"
+                href="#"
+                onclick="logout();"
+                >Logout</a
+              >
+            </nav>
+            <div class="flex items-center gap-4 header-actions">
+              <!-- <button
+                class="flex size-10 items-center justify-center rounded-lg bg-[#e7ebf3] dark:bg-gray-800 text-[#0d121b] dark:text-white transition-all hover:bg-gray-200"
+              >
+                <span class="material-symbols-outlined">settings</span>
+              </button> -->
+              <a
+                href="settings1.html"
+                class="flex size-10 items-center justify-center rounded-lg bg-[#e7ebf3] dark:bg-gray-800 text-[#0d121b] dark:text-white transition-all hover:bg-gray-200"
+              >
+                <span class="material-symbols-outlined">settings</span>
+              </a>
+
+              <a
+                href="profile1.html"
+                class="cursor-pointer group h-10 w-10 shrink-0 overflow-hidden rounded-full border-2 border-primary bg-center bg-no-repeat bg-cover block"
+                style="
+                  background-image: url(&quot;https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&amp;fit=facearea&amp;facepad=2&amp;w=256&amp;h=256&amp;q=80&quot;);
+                "
+              ></a>
+              <button onclick="logout();" class="hidden md:flex shrink-0 items-center justify-center rounded-lg h-10 w-10 bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors" title="Logout">
+                  <span class="material-symbols-outlined text-[20px]">logout</span>
+              </button>
+              
+              <button id="hamburgerBtn" class="hamburger-btn flex shrink-0 items-center justify-center rounded-lg h-10 w-10 bg-[#e7ebf3] dark:bg-gray-800 text-[#0d121b] dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                <span class="material-symbols-outlined text-[20px]">menu</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+      <main class="flex-grow p-6 lg:p-10">
+        <div class="mx-auto max-w-7xl">
+          <div class="mb-8">
+            <h1
+              class="text-4xl font-black tracking-tight text-[#0d121b] dark:text-white"
+            >
+              Faculty Dashboard
+            </h1>
+            <p id="faculty-user-name" class="text-lg text-[#4c669a] dark:text-gray-400">
+              Welcome back, Professor
+            </p>
+          </div>
+          <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div class="lg:col-span-2 space-y-6">
+              <div
+                class="rounded-xl bg-white dark:bg-gray-800 shadow-sm border border-[#e7ebf3] dark:border-gray-700 overflow-hidden"
+              >
+                <div class="flex flex-col md:flex-row h-full">
+                  <div
+                    class="w-full md:w-1/3 min-h-[250px] relative bg-gray-100 dark:bg-gray-950 overflow-hidden"
+                    id="faculty-map-container"
+                  >
+                    <!-- THE LIVE MAP -->
+                    <div id="faculty-map" class="absolute inset-0 z-0"></div>
+
+                    <!-- Decorative Overlays -->
+                    <div class="absolute inset-0 z-[5] pointer-events-none opacity-40 dark:opacity-20 campus-grid"></div>
+                    
+                    <!-- Overlay status -->
+                    <div class="absolute top-4 left-4 z-[400] bg-white/90 dark:bg-gray-900/90 backdrop-blur px-3 py-1.5 rounded-lg shadow-sm border border-gray-100 dark:border-gray-800 flex items-center gap-2">
+                        <div id="gps-status-dot" class="w-2 h-2 rounded-full bg-slate-400"></div>
+                        <span id="gps-status-text" class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Locating...</span>
+                    </div>
+                  </div>
+                  <div class="flex-1 p-6 flex flex-col justify-between">
+                    <div>
+                      <p
+                        class="text-xs font-bold uppercase tracking-widest text-primary mb-1"
+                      >
+                        Current Lecture
+                      </p>
+                      <h2
+                        id="current-lecture-name"
+                        class="text-2xl font-bold text-[#0d121b] dark:text-white"
+                      >
+                        Current Lecture (Loading...)
+                      </h2>
+                      <p
+                        id="current-lecture-location"
+                        class="text-[#4c669a] dark:text-gray-400 mt-1 flex items-center gap-1"
+                      >
+                        <span class="material-symbols-outlined text-sm"
+                          >location_on</span
+                        >
+                        Checking Schedule...
+                      </p>
+                    </div>
+                    <div class="mt-6 flex flex-col gap-4">
+                      <div
+                        class="w-full bg-[#f0f2f5] dark:bg-gray-700 h-3 rounded-full overflow-hidden"
+                      >
+                        <div id="lecture-progress-bar" class="bg-primary h-full" style="width: 0%"></div>
+                      </div>
+                      <div class="flex items-center justify-between">
+                        <div class="flex items-baseline gap-1">
+                          <span id="present-count" class="text-3xl font-black text-primary"
+                            >0</span
+                          >
+                          <span
+                            id="total-expected"
+                            class="text-[#4c669a] dark:text-gray-400 text-sm font-medium"
+                            >/ 0 students present</span
+                          >
+                        </div>
+                        <div class="flex flex-col items-end">
+                          <div class="flex flex-col">
+                            <div class="flex items-center gap-2">
+                                <span class="relative flex h-2 w-2">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                </span>
+                                <span class="text-[10px] font-bold text-primary uppercase tracking-tight">LIVE TRACKING</span>
+                            </div>
+                            <div id="sidebar-coords" class="text-[9px] font-mono text-gray-500 dark:text-gray-400 mt-0.5">00.0000° N, 00.0000° W</div>
+                          </div>
+                          <button
+                            class="bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-lg font-bold text-sm transition-all shadow-lg shadow-primary/20"
+                          >
+                            Manage Class
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div class="flex items-center justify-between mb-4">
+                  <h3
+                    class="text-xl font-bold text-[#0d121b] dark:text-white px-1 flex items-center gap-2"
+                  >
+                    <span class="material-symbols-outlined"
+                      >wifi_tethering</span
+                    >
+                    Recent Check-ins
+                  </h3>
+                  <button
+                    class="text-primary text-sm font-semibold hover:underline"
+                  >
+                    View All
+                  </button>
+                </div>
+                <div
+                  id="recent-checkins-container"
+                  class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+                >
+                  <!-- Dynamic students -->
+                </div>
+              </div>
+              <div
+                class="rounded-xl bg-primary text-white p-6 shadow-xl shadow-primary/30"
+              >
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h3 class="text-lg font-bold opacity-90">
+                      Daily Analytics Overview
+                    </h3>
+                    <p id="avg-attendance-kpi" class="text-4xl font-black mt-2">- %</p>
+                    <p class="text-sm opacity-80 mt-1">
+                      Average Attendance Today
+                    </p>
+                  </div>
+                  <div
+                    class="flex items-center justify-center p-4 bg-white/20 rounded-full"
+                  >
+                    <span class="material-symbols-outlined text-4xl"
+                      >trending_up</span
+                    >
+                  </div>
+                </div>
+                <div class="mt-6 flex gap-2">
+                  <div
+                    class="flex-1 h-2 bg-white/20 rounded-full overflow-hidden"
+                  >
+                    <div id="analytics-progress-bar" class="bg-white h-full" style="width: 0%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="space-y-6">
+              <div
+                class="rounded-xl bg-white dark:bg-gray-800 border border-[#e7ebf3] dark:border-gray-700 p-5 shadow-sm"
+              >
+                <p
+                  class="text-xs font-bold uppercase tracking-widest text-[#4c669a] dark:text-gray-400 mb-4"
+                >
+                  Upcoming Next
+                </p>
+                <div class="flex items-center gap-4">
+                  <div
+                    class="size-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary"
+                  >
+                    <span class="material-symbols-outlined text-3xl"
+                      >psychology</span
+                    >
+                  </div>
+                  <div>
+                    <h3
+                      id="upcoming-lecture-name"
+                      class="font-bold text-lg text-[#0d121b] dark:text-white"
+                    >
+                      Loading...
+                    </h3>
+                    <p id="upcoming-lecture-time" class="text-sm text-[#4c669a] dark:text-gray-400">
+                      -
+                    </p>
+                  </div>
+                </div>
+                <div
+                  class="mt-5 pt-4 border-t border-dashed border-[#e7ebf3] dark:border-gray-700 flex items-center justify-between"
+                >
+                  <div
+                    class="flex items-center gap-2 text-sm text-[#4c669a] dark:text-gray-400"
+                  >
+                    <span class="material-symbols-outlined text-sm"
+                      >meeting_room</span
+                    >
+                    <span id="upcoming-lecture-room">-</span>
+                  </div>
+                  <span
+                    class="text-xs font-bold px-2 py-1 bg-background-light dark:bg-gray-700 rounded text-primary"
+                    >Pre-Session</span
+                  >
+                </div>
+              </div>
+              <div
+                class="rounded-xl bg-white dark:bg-gray-800 border border-[#e7ebf3] dark:border-gray-700 shadow-sm"
+              >
+                <div class="p-5 border-b border-[#e7ebf3] dark:border-gray-700">
+                  <h3 class="font-bold text-lg text-[#0d121b] dark:text-white">
+                    Today's Schedule
+                  </h3>
+                  <p class="text-xs text-[#4c669a] dark:text-gray-400">
+                    Wednesday, Oct 25
+                  </p>
+                </div>
+                <div id="today-schedule-container" class="p-2">
+                   <!-- Dynamic items -->
+                </div>
+                <div class="p-4 border-t border-[#e7ebf3] dark:border-gray-700">
+                  <a
+                    href="timetable.html"
+                    class="w-full py-2 text-sm font-bold text-[#4c669a] hover:text-primary transition-colors flex items-center justify-center gap-2"
+                  >
+                    <span class="material-symbols-outlined text-lg"
+                      >calendar_month</span
+                    >
+                    Full Schedule
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+      <footer
+        class="mt-auto px-6 py-8 border-t border-[#e7ebf3] dark:border-gray-800 text-center"
+      >
+        <p class="text-sm text-[#4c669a] dark:text-gray-500">
+          © 2026 GeoAttend Developed by Parthen04. All rights reserved.
+        </p>
+      </footer>
+    </div>
+    <!-- Custom Location Permission Modal -->
+    <div id="location-modal" class="fixed inset-0 z-[60] hidden">
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all border border-gray-100 dark:border-gray-700 animate-in fade-in zoom-in duration-300">
+                <div class="p-6">
+                    <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <span class="material-symbols-outlined text-3xl text-primary">location_on</span>
+                    </div>
+                    <h3 class="text-2xl font-black text-gray-900 dark:text-white text-center mb-2 tracking-tight">Location Required</h3>
+                    <p class="text-gray-500 dark:text-gray-400 text-center text-sm leading-relaxed mb-8">
+                        To verify your presence for class management, GeoAttend needs your location. Your privacy is protected and data is used only for academic purposes.
+                    </p>
+                    <div class="flex flex-col gap-3">
+                        <button id="allow-always" class="w-full bg-primary text-white h-12 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0">
+                            Allow While Using Site
+                        </button>
+                        <button id="allow-session" class="w-full bg-primary/10 text-primary h-12 rounded-xl font-bold hover:bg-primary/20 transition-all">
+                            Allow This Time
+                        </button>
+                        <button id="deny-location" class="w-full bg-transparent text-gray-400 h-12 rounded-xl font-medium hover:text-gray-600 dark:hover:text-gray-200 transition-all">
+                            Do Not Allow
+                        </button>
+                    </div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-800/50 p-4 border-t border-gray-100 dark:border-gray-700">
+                    <div class="flex items-center gap-2 justify-center text-[10px] text-gray-400 font-medium uppercase tracking-widest">
+                        <span class="material-symbols-outlined text-xs">shield</span>
+                        Encrypted & Privacy Focused
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GPS Hardware Check Prompt -->
+    <div id="gps-prompt" class="fixed inset-x-0 bottom-8 z-[70] hidden px-4">
+        <div class="max-w-md mx-auto bg-red-600 text-white p-4 rounded-xl shadow-2xl flex items-center justify-between gap-4 border border-red-500 animate-bounce">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined">sensors_off</span>
+                <div>
+                    <p class="font-bold text-sm">GPS Hardware Disabled</p>
+                    <p class="text-[10px] opacity-90">Please turn on your system GPS/Location services.</p>
+                </div>
+            </div>
+            <button onclick="checkGPSAgain()" class="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg text-xs font-bold transition-all uppercase">Retry</button>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script type="module">
+      import { db } from "../firebase-config.js";
+      import { doc, getDoc, updateDoc, serverTimestamp, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+      const facultyNameDisplay = document.getElementById('faculty-user-name');
+      const session = localStorage.getItem('geoattend-session') || sessionStorage.getItem('geoattend-session');
+      const userId = localStorage.getItem('geoattend-userId') || sessionStorage.getItem('geoattend-userId');
+      
+      const statusDot = document.getElementById('gps-status-dot');
+      const statusText = document.getElementById('gps-status-text');
+      const locationModal = document.getElementById('location-modal');
+      const gpsPrompt = document.getElementById('gps-prompt');
+      
+      const PERMISSION_KEY_PERSISTENT = 'geoattend-location-consent';
+      const PERMISSION_KEY_SESSION = 'geoattend-location-consent-session';
+      
+      const campusCenter = [23.5295, 72.4577];
+      let map, userMarker;
+      
+      let customMarkers = {};
+      const customMarkerGroup = L.layerGroup();
+      let geofenceLayers = {};
+      const fenceLabelGroup = L.layerGroup();
+
+      if (session !== 'faculty') {
+        window.location.href = '../loginpage.html';
+      } else {
+        if (userId) {
+          // --- HELPERS ---
+          function hashString(str) {
+              let hash = 0;
+              for (let i = 0; i < str.length; i++) {
+                  let char = str.charCodeAt(i);
+                  hash = ((hash << 5) - hash) + char;
+                  hash = hash & hash;
+              }
+              return Math.abs(hash);
+          }
+
+          function seededRandom(seed) {
+              var x = Math.sin(seed++) * 10000;
+              return x - Math.floor(x);
+          }
+
+          async function fetchFacultyData() {
+            if (!userId || session !== 'faculty') {
+                window.location.href = '../loginpage.html';
+                return;
+            }
+
+            // Initialize map immediately at campus center
+            if (!map) {
+                initMap(campusCenter[0], campusCenter[1]);
+            }
+
+            try {
+              const userDoc = await getDoc(doc(db, "users", userId));
+              let userData = userDoc.exists() ? userDoc.data() : { name: 'Professor', branch: 'CE' };
+              
+              facultyNameDisplay.textContent = `Welcome back, ${userData.name || 'Professor'}`;
+
+              // Average Attendance (Deterministic Fallback)
+              const seed = hashString(userId + (userData.branch || 'CE'));
+              const avgAttendance = userData.avgAttendance || (85 + Math.floor(seededRandom(seed) * 10));
+              document.getElementById('avg-attendance-kpi').textContent = avgAttendance + '%';
+              document.getElementById('analytics-progress-bar').style.width = avgAttendance + '%';
+
+              // Current Lecture (Deterministic Fallback)
+              if (userData.currentLecture) {
+                document.getElementById('current-lecture-name').textContent = userData.currentLecture.name || '-';
+                document.getElementById('current-lecture-location').innerHTML = `<span class="material-symbols-outlined text-sm">location_on</span> ${userData.currentLecture.location || '-'}`;
+                document.getElementById('present-count').textContent = userData.currentLecture.present || '0';
+                document.getElementById('total-expected').textContent = `/ ${userData.currentLecture.total || '-'} students present`;
+                
+                if (userData.currentLecture.progress) {
+                  document.getElementById('lecture-progress-bar').style.width = userData.currentLecture.progress + '%';
+                }
+              } else {
+                // Default Fallback
+                document.getElementById('current-lecture-name').textContent = "Cloud Computing - 6CE-D";
+                document.getElementById('current-lecture-location').innerHTML = `<span class="material-symbols-outlined text-sm">location_on</span> Room 209`;
+                document.getElementById('present-count').textContent = "52";
+                document.getElementById('total-expected').textContent = "/ 60 students present";
+                document.getElementById('lecture-progress-bar').style.width = '85%';
+              }
+
+              // Dynamic Timetable Logic (Synced with timetable.html)
+              const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+              const date = new Date();
+              const currentDay = days[date.getDay()];
+              const isWeekend = currentDay === 'sun' || currentDay === 'sat';
+              
+              const timeSlots = [
+                { start: "08:30", end: "09:15", label: "Slot 1" },
+                { start: "09:15", end: "10:10", label: "Slot 2" },
+                { start: "10:10", end: "10:45", label: "Short Break", isBreak: true },
+                { start: "10:45", end: "11:40", label: "Slot 3" },
+                { start: "11:40", end: "12:30", label: "Lunch Break", isBreak: true },
+                { start: "12:30", end: "14:10", label: "Lab Session" }
+              ];
+              
+              const subjects = ['Cloud Computing', 'Python Programming', 'Data Structures', 'AI & ML', 'Software Eng.'];
+              const locations = ['1NB108', '1NB 106-A', '2NB209', '3NB301', 'Lab 4A'];
+              const batches = ['6CE-D', '4CE-A', '2CE-C', '6CE-A', '4CE-B'];
+
+              const scheduleSeed = hashString(userId + currentDay + (userData.branch || 'Computer Engineering'));
+              const todaySchedule = timeSlots.map((slot, i) => {
+                  const sIdx = Math.floor(seededRandom(scheduleSeed + i) * subjects.length);
+                  const bIdx = Math.floor(seededRandom(scheduleSeed + i + 10) * batches.length);
+                  const lIdx = Math.floor(seededRandom(scheduleSeed + i + 20) * locations.length);
+                  const isLab = slot.label === "Lab Session";
+                  
+                  const [startH, startM] = slot.start.split(':').map(Number);
+                  const [endH, endM] = slot.end.split(':').map(Number);
+                  
+                  const startTimeObj = new Date(date);
+                  startTimeObj.setHours(startH, startM, 0);
+                  
+                  const endTimeObj = new Date(date);
+                  endTimeObj.setHours(endH, endM, 0);
+
+                  return {
+                      name: slot.isBreak ? slot.label : (subjects[sIdx] + (isLab ? ' Lab' : '')),
+                      room: slot.isBreak ? '-' : locations[lIdx],
+                      batch: slot.isBreak ? '-' : batches[bIdx],
+                      time: `${slot.start} - ${slot.end}`,
+                      start: startTimeObj,
+                      end: endTimeObj,
+                      isBreak: slot.isBreak
+                  };
+              });
+
+              // Find current and upcoming
+              const now = new Date();
+              let currentLecture = null;
+              let upcomingLecture = null;
+              let currentIdx = -1;
+
+              if (!isWeekend) {
+                  todaySchedule.forEach((item, idx) => {
+                      if (now >= item.start && now <= item.end) {
+                          currentLecture = item;
+                          currentIdx = idx;
+                      } else if (now < item.start && !upcomingLecture && !item.isBreak) {
+                          upcomingLecture = item;
+                      }
+                  });
+              }
+
+              // Update Current Lecture Section
+              const curName = document.getElementById('current-lecture-name');
+              const curLoc = document.getElementById('current-lecture-location');
+              const progressBar = document.getElementById('lecture-progress-bar');
+              
+              if (currentLecture && !currentLecture.isBreak) {
+                  curName.textContent = `${currentLecture.name} - ${currentLecture.batch}`;
+                  curLoc.innerHTML = `<span class="material-symbols-outlined text-sm">location_on</span> ${currentLecture.room}`;
+                  
+                  // Progress calculation
+                  const total = currentLecture.end - currentLecture.start;
+                  const elapsed = now - currentLecture.start;
+                  const pct = Math.min(100, Math.max(0, (elapsed / total) * 100));
+                  progressBar.style.width = `${pct}%`;
+
+                  // Fetch/Estimate attendance for live class
+                  const seed = hashString(userId + currentDay + currentLecture.time);
+                  const estimatedPresent = 45 + Math.floor(seededRandom(seed) * 12); // Random between 45-56
+                  document.getElementById('present-count').textContent = estimatedPresent;
+                  document.getElementById('total-expected').textContent = "/ 60 students present";
+
+              } else {
+                  curName.textContent = isWeekend ? "Weekend - No Lectures" : (now > todaySchedule[timeSlots.length-1].end ? "Day Ended" : "No Active Lecture");
+                  curLoc.innerHTML = `<span class="material-symbols-outlined text-sm">event_busy</span> ${isWeekend ? 'Enjoy your holiday' : 'Check schedule below'}`;
+                  progressBar.style.width = `0%`;
+                  
+                  // Hide attendance count when no class is active
+                  document.getElementById('present-count').textContent = "-";
+                  document.getElementById('total-expected').textContent = "Not in session";
+              }
+
+              // Update Upcoming Card
+              const upName = document.getElementById('upcoming-lecture-name');
+              const upTime = document.getElementById('upcoming-lecture-time');
+              const upRoom = document.getElementById('upcoming-lecture-room');
+
+              if (upcomingLecture) {
+                  upName.textContent = `${upcomingLecture.name} - ${upcomingLecture.batch}`;
+                  upTime.textContent = upcomingLecture.time;
+                  upRoom.textContent = upcomingLecture.room;
+              } else {
+                  upName.textContent = isWeekend ? "Next: Monday" : "No more lectures today";
+                  upTime.textContent = "-";
+                  upRoom.textContent = "-";
+              }
+
+              // Update Today's Schedule Card
+              const scheduleContainer = document.getElementById('today-schedule-container');
+              if (scheduleContainer) {
+                  scheduleContainer.innerHTML = todaySchedule.map((s, i) => {
+                    if (s.isBreak) return ''; // Skip short breaks in dashboard summary
+                    const isLive = currentLecture && currentLecture.time === s.time;
+                    const isPast = now > s.end;
+                    
+                    return `
+                      <div class="flex items-center gap-4 p-4 ${isLive ? 'rounded-lg bg-primary/5 border border-primary/20 relative overflow-hidden' : ''}">
+                        ${isLive ? '<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>' : ''}
+                        <div class="text-center w-12 flex flex-col shrink-0">
+                          <span class="text-xs font-bold ${isLive ? 'text-primary' : (isPast ? 'text-gray-400' : '')}">${s.time.split(' - ')[0]}</span>
+                          <span class="text-[10px] ${isLive ? 'text-primary' : 'text-[#4c669a]'}">${s.time.includes('PM') || (parseInt(s.time.split(':')[0]) < 8) || (parseInt(s.time.split(':')[0]) === 12) ? 'PM' : 'AM'}</span>
+                        </div>
+                        <div class="flex-grow">
+                          <h4 class="text-sm font-bold ${isLive ? 'text-primary' : (isPast ? 'text-gray-400' : '')}">${s.name} - ${s.batch}</h4>
+                          <p class="text-xs ${isLive ? 'text-primary/80' : 'text-[#4c669a]'}">${s.room} ${isLive ? '(In Progress)' : (isPast ? '(Completed)' : '')}</p>
+                        </div>
+                      </div>
+                    `;
+                  }).join('');
+              }
+
+              // Recent Check-ins (Deterministic Fallback)
+              const checkinsContainer = document.getElementById('recent-checkins-container');
+              if (checkinsContainer) {
+                if (currentLecture && !currentLecture.isBreak) {
+                  const studentNames = ['Tirth Patel', 'Rahul Roy', 'Darshan Shah'];
+                  let checkinsHtml = '';
+                  for (let i = 0; i < 3; i++) {
+                    checkinsHtml += `
+                      <div class="flex items-center gap-4 rounded-xl border border-[#cfd7e7] dark:border-gray-700 bg-white dark:bg-gray-800 p-4 transition-transform hover:scale-[1.02]">
+                        <div class="size-10 shrink-0 rounded-full bg-blue-100 flex items-center justify-center border border-primary/20">
+                          <span class="material-symbols-outlined text-blue-600">person</span>
+                        </div>
+                        <div class="flex flex-col">
+                          <h4 class="text-sm font-bold text-[#0d121b] dark:text-white">${studentNames[i]}</h4>
+                          <p class="text-xs ${i === 0 ? 'text-primary' : 'text-[#4c669a] dark:text-gray-400'} font-medium">${i === 0 ? 'Just now' : (10-i) + ':45 AM'}</p>
+                        </div>
+                      </div>`;
+                  }
+                  checkinsContainer.innerHTML = checkinsHtml;
+                } else {
+                  checkinsContainer.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-8 text-center bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
+                      <span class="material-symbols-outlined text-gray-400 text-4xl mb-2">event_busy</span>
+                      <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">No Active Lecture</p>
+                      <p class="text-xs text-gray-400 mt-1">Check-ins will appear here during live classes.</p>
+                    </div>`;
+                }
+              }
+            } catch (error) {
+              console.error("Error in fetchFacultyData:", error);
+            }
+          }
+
+          fetchFacultyData();
+        }
+      }
+
+      function initMap(lat, lng) {
+          if (map) return;
+          
+          map = L.map('faculty-map', {
+              zoomControl: false,
+              attributionControl: false,
+              maxZoom: 24
+          }).setView([lat, lng], 17);
+
+          L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+              maxZoom: 24,
+              maxNativeZoom: 19
+          }).addTo(map);
+
+          // Permanent Campus Marker
+          const guniIcon = L.divIcon({
+              className: 'guni-marker',
+              html: `<div class="flex flex-col items-center">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2942/2942821.png" alt="University" class="w-8 h-8 rounded-full shadow-lg border-2 border-primary bg-white object-cover">
+                        <span class="text-[10px] font-black bg-primary text-white px-2 py-0.5 rounded shadow-lg mt-1 whitespace-nowrap uppercase tracking-tighter">Ganpat University</span>
+                     </div>`,
+              iconSize: [100, 50],
+              iconAnchor: [50, 40]
+          });
+          L.marker(campusCenter, { icon: guniIcon, zIndexOffset: 900 }).addTo(map);
+          L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+          map.on('zoomend', () => {
+              const currentZoom = map.getZoom();
+              if (currentZoom >= 17) {
+                  if (!map.hasLayer(customMarkerGroup)) customMarkerGroup.addTo(map);
+              } else {
+                  if (map.hasLayer(customMarkerGroup)) map.removeLayer(customMarkerGroup);
+              }
+              if (currentZoom >= 18) {
+                  if (!map.hasLayer(fenceLabelGroup)) fenceLabelGroup.addTo(map);
+              } else {
+                  if (map.hasLayer(fenceLabelGroup)) map.removeLayer(fenceLabelGroup);
+              }
+          });
+
+          // Helper to strip "Class " or "Classroom " from names
+          const formatDisplayName = (name) => {
+              if (!name) return "";
+              return name.replace(/^(Classroom|Class)\s+/i, '').trim();
+          };
+
+          // Sync Custom Markers (Read-Only)
+          onSnapshot(collection(db, "custom_markers"), (snapshot) => {
+              snapshot.docChanges().forEach((change) => {
+                  const data = change.doc.data();
+                  const id = change.doc.id;
+
+                  if (change.type === "added" || change.type === "modified") {
+                      if (customMarkers[id]) customMarkerGroup.removeLayer(customMarkers[id]);
+
+                      const displayName = formatDisplayName(data.name);
+
+                      const markerIcon = L.divIcon({
+                          className: 'custom-marker-with-label',
+                          html: `<div class="flex flex-col items-center drop-shadow-sm">
+                                    <img src="https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png" class="w-[25px] h-[41px]" alt="Marker">
+                                    <span class="text-[10px] font-bold bg-white/95 text-slate-800 px-1.5 py-0.5 rounded shadow-sm border border-slate-200 mt-1 whitespace-nowrap truncate max-w-[120px] text-center">${displayName}</span>
+                                 </div>`,
+                          iconSize: [120, 65],
+                          iconAnchor: [60, 41]
+                      });
+
+                      const marker = L.marker([data.lat, data.lng], { icon: markerIcon });
+                      marker.bindPopup(`<b>${displayName}</b>`);
+                      customMarkers[id] = marker;
+                      customMarkerGroup.addLayer(marker);
+                      
+                      if (map.getZoom() >= 17 && !map.hasLayer(customMarkerGroup)) {
+                          customMarkerGroup.addTo(map);
+                      }
+                  }
+
+                  if (change.type === "removed") {
+                      if (customMarkers[id]) {
+                          customMarkerGroup.removeLayer(customMarkers[id]);
+                          delete customMarkers[id];
+                      }
+                  }
+              });
+          });
+
+          // Sync Geofences (Read-Only)
+          onSnapshot(collection(db, "geofences"), (snapshot) => {
+              snapshot.docChanges().forEach((change) => {
+                  const data = change.doc.data();
+                  const id = change.doc.id;
+
+                  if (change.type === "added" || change.type === "modified") {
+                      if (geofenceLayers[id]) {
+                          map.removeLayer(geofenceLayers[id].circle);
+                          fenceLabelGroup.removeLayer(geofenceLayers[id].label);
+                      }
+
+                      const displayName = formatDisplayName(data.name);
+
+                      const circle = L.circle([data.lat, data.lng], {
+                          color: '#3b82f6',
+                          fillColor: '#3b82f6',
+                          fillOpacity: 0.1,
+                          weight: 2,
+                          dashArray: '5, 5'
+                      }).addTo(map);
+
+                      circle.bindPopup(`<b>${displayName}</b><br><span class="text-xs text-slate-500">${data.type || 'Geofence'}</span>`);
+
+                      const labelIcon = L.divIcon({
+                          className: 'fence-label-icon',
+                          html: `<div class="text-[10px] font-bold text-blue-700 bg-white/50 px-1 rounded backdrop-blur-sm border border-blue-200">${displayName}</div>`,
+                          iconSize: [100, 20],
+                          iconAnchor: [50, 10]
+                      });
+                      
+                      const label = L.marker([data.lat, data.lng], { icon: labelIcon });
+                      fenceLabelGroup.addLayer(label);
+
+                      geofenceLayers[id] = { circle, label };
+                      
+                      if (map.getZoom() >= 18 && !map.hasLayer(fenceLabelGroup)) {
+                          fenceLabelGroup.addTo(map);
+                      }
+                  }
+                  
+                  if (change.type === "removed") {
+                      if (geofenceLayers[id]) {
+                          map.removeLayer(geofenceLayers[id].circle);
+                          fenceLabelGroup.removeLayer(geofenceLayers[id].label);
+                          delete geofenceLayers[id];
+                      }
+                  }
+              });
+          });
+      }
+
+      function updateUserMarker(lat, lng) {
+          if (!map) {
+              initMap(lat, lng);
+          }
+
+          if (!userMarker) {
+              const userIcon = L.divIcon({
+                  className: 'custom-user-marker',
+                  html: `
+                    <div class="relative flex items-center justify-center">
+                        <div class="absolute w-8 h-8 bg-primary/20 rounded-full animate-ping"></div>
+                        <div class="relative w-4 h-4 bg-primary rounded-full border-2 border-white dark:border-gray-900 shadow-lg"></div>
+                    </div>`,
+                  iconSize: [32, 32],
+                  iconAnchor: [16, 16]
+              });
+              userMarker = L.marker([lat, lng], { icon: userIcon }).addTo(map);
+              userMarker.bindPopup("<b>You are here</b>").openPopup();
+          } else {
+              userMarker.setLatLng([lat, lng]);
+          }
+
+          map.panTo([lat, lng]);
+          statusDot.className = "w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]";
+          statusText.textContent = "Live • Tracking Active";
+          
+          const coordsElem = document.getElementById('sidebar-coords');
+          if (coordsElem) {
+              coordsElem.textContent = `${lat.toFixed(4)}° N, ${lng.toFixed(4)}° W`;
+          }
+          
+          if (gpsPrompt) gpsPrompt.classList.add('hidden');
+      }
+
+      function startLocationTracking() {
+          if (!navigator.geolocation) {
+              statusText.textContent = "GPS Not Supported";
+              return;
+          }
+
+          const hasConsent = localStorage.getItem(PERMISSION_KEY_PERSISTENT) === 'granted' || 
+                             sessionStorage.getItem(PERMISSION_KEY_SESSION) === 'granted';
+
+          if (!hasConsent) {
+              locationModal.classList.remove('hidden');
+              statusText.textContent = "Awaiting Permission";
+              return;
+          }
+
+          if (userId && session === 'faculty') {
+              navigator.geolocation.watchPosition(
+                  async (position) => {
+                      const lat = position.coords.latitude;
+                      const lng = position.coords.longitude;
+                      
+                      updateUserMarker(lat, lng);
+
+                      try {
+                          await updateDoc(doc(db, "users", userId), {
+                              lastPosition: {
+                                  lat: lat,
+                                  lng: lng,
+                                  timestamp: serverTimestamp()
+                              }
+                          });
+                      } catch (err) {
+                          console.error("Error updating location:", err);
+                      }
+                  },
+                  (error) => {
+                      console.error("Geolocation error:", error.message);
+                      statusText.textContent = "GPS Error";
+                      statusDot.className = "w-2 h-2 rounded-full bg-red-500";
+                      
+                      if (error.code === 1 || error.code === 3) {
+                          if (gpsPrompt) gpsPrompt.classList.remove('hidden');
+                      }
+                  },
+                  { enableHighAccuracy: true, maximumAge: 30000, timeout: 27000 }
+              );
+          }
+      }
+
+      window.checkGPSAgain = function() {
+          if (gpsPrompt) gpsPrompt.classList.add('hidden');
+          startLocationTracking();
+      };
+
+      // Modal Button Actions
+      document.getElementById('allow-always').addEventListener('click', () => {
+          localStorage.setItem(PERMISSION_KEY_PERSISTENT, 'granted');
+          locationModal.classList.add('hidden');
+          startLocationTracking();
+      });
+
+      document.getElementById('allow-session').addEventListener('click', () => {
+          sessionStorage.setItem(PERMISSION_KEY_SESSION, 'granted');
+          locationModal.classList.add('hidden');
+          startLocationTracking();
+      });
+
+      document.getElementById('deny-location').addEventListener('click', () => {
+          locationModal.classList.add('hidden');
+          statusText.textContent = "Tracking Disabled";
+          statusDot.className = "w-2 h-2 rounded-full bg-gray-400";
+      });
+
+      window.logout = function() {
+        localStorage.removeItem('geoattend-session');
+        localStorage.removeItem('geoattend-userId');
+        sessionStorage.removeItem('geoattend-session');
+        sessionStorage.removeItem('geoattend-userId');
+        window.location.href = '../loginpage.html';
+      };
+
+      // Hamburger Menu Logic
+      const hamburgerBtn = document.getElementById("hamburgerBtn");
+      const navMenu = document.getElementById("navMenu");
+      
+      if (hamburgerBtn) {
+          hamburgerBtn.addEventListener("click", () => {
+            navMenu.classList.toggle("active");
+            const icon = hamburgerBtn.querySelector('.material-symbols-outlined');
+            if (navMenu.classList.contains("active")) {
+              icon.textContent = "close";
+            } else {
+              icon.textContent = "menu";
+            }
+          });
+      }
+
+      // Global Theme Management
+      function initTheme() {
+        let savedTheme = localStorage.getItem('geoattend-theme');
+        if (!savedTheme) {
+            savedTheme = 'light';
+            localStorage.setItem('geoattend-theme', 'light');
+        }
+        if (savedTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light');
+        } else {
+            document.documentElement.classList.add('light');
+            document.documentElement.classList.remove('dark');
+        }
+      }
+
+      initTheme();
+      startLocationTracking();
+    </script>
+  </body>
+</html>

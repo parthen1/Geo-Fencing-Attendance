@@ -1,0 +1,1110 @@
+<!doctype html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Live Tracking - GeoAttendance</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style type="text/tailwindcss">
+      @layer base {
+        @media (min-width: 1024px) {
+          #sidebar-toggle:checked ~ aside {
+            width: 5rem;
+          }
+          #sidebar-toggle:checked ~ aside .logo-text,
+          #sidebar-toggle:checked ~ aside .nav-text,
+          #sidebar-toggle:checked ~ aside .profile-info {
+            display: none;
+          }
+          #sidebar-toggle:checked ~ aside .nav-item {
+            justify-content: center;
+            padding-left: 0;
+            padding-right: 0;
+          }
+          #sidebar-toggle:checked ~ main {
+            margin-left: 5rem;
+          }
+        }
+        @media (max-width: 1023px) {
+          aside {
+            transform: translateX(-100%);
+            z-index: 50;
+          }
+          main {
+            margin-left: 0 !important;
+          }
+          #mobile-nav-toggle:checked ~ aside {
+            transform: translateX(0);
+          }
+          #mobile-nav-toggle:checked ~ .mobile-overlay {
+            display: block;
+          }
+        }
+      }
+      
+      #map {
+        height: calc(100vh - 200px);
+        border-radius: 1rem;
+        z-index: 10;
+      }
+      
+      .geofence-list-item:hover .actions {
+        opacity: 1;
+      }
+
+      @keyframes pulse-ring {
+        0% { transform: scale(0.33); opacity: 1; }
+        80%, 100% { opacity: 0; }
+      }
+      @keyframes pulse-dot {
+        0% { transform: scale(0.8); }
+        50% { transform: scale(1); }
+        100% { transform: scale(0.8); }
+      }
+      .pulse-ring { animation: pulse-ring 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+      .pulse-dot { animation: pulse-dot 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+      
+      .fence-label-icon {
+        background: transparent !important;
+        border: none !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+      }
+    </style>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#135bec",
+              "background-light": "#f6f6f8",
+              "background-dark": "#101622",
+              "navy-sidebar": "#0f172a",
+            }
+          }
+        }
+      };
+    </script>
+    <script>
+        function initTheme() {
+            let savedTheme = localStorage.getItem('geoattend-theme');
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.add('light');
+            }
+        }
+        initTheme();
+    </script>
+  </head>
+  <body class="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased min-h-screen relative">
+    <input class="hidden" id="sidebar-toggle" type="checkbox" />
+    <input class="hidden" id="mobile-nav-toggle" type="checkbox" />
+    <label for="mobile-nav-toggle" class="mobile-overlay hidden fixed inset-0 bg-black/50 z-40 lg:hidden"></label>
+
+    <aside class="fixed inset-y-0 left-0 w-64 bg-navy-sidebar text-white transition-all duration-300 z-50">
+      <div class="flex flex-col h-full overflow-hidden">
+        <div class="flex items-center justify-between px-6 py-8 lg:justify-start lg:gap-3">
+          <div class="flex items-center gap-3 logo-text">
+            <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
+              <span class="material-icons text-white text-xl">location_on</span>
+            </div>
+            <span class="text-xl font-bold tracking-tight">GeoAdmin</span>
+          </div>
+          <label class="hidden lg:block cursor-pointer hover:bg-white/10 p-1 rounded transition-colors" for="sidebar-toggle">
+            <span class="material-icons text-white">menu_open</span>
+          </label>
+          <label class="lg:hidden cursor-pointer hover:bg-white/10 p-1 rounded transition-colors" for="mobile-nav-toggle">
+            <span class="material-icons text-white">close</span>
+          </label>
+        </div>
+        <nav class="flex-1 px-4 space-y-1">
+          <a class="nav-item flex items-center gap-3 px-3 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors" href="adminhome.html">
+            <span class="material-icons text-xl">dashboard</span>
+            <span class="font-medium text-sm nav-text">Dashboard</span>
+          </a>
+          <a class="nav-item flex items-center gap-3 px-3 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors" href="usermgmt.html">
+            <span class="material-icons text-xl">people</span>
+            <span class="font-medium text-sm nav-text">User Management</span>
+          </a>
+          <a class="nav-item flex items-center gap-3 px-3 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors" href="queries.html">
+            <span class="material-icons text-xl">question_answer</span>
+            <span class="font-medium text-sm nav-text">Queries</span>
+          </a>
+          <a class="nav-item flex items-center gap-3 px-3 py-3 rounded-lg bg-primary text-white transition-colors" href="livetracking.html">
+            <span class="material-icons text-xl">map</span>
+            <span class="font-medium text-sm nav-text">Live Tracking</span>
+          </a>
+          <a class="nav-item flex items-center gap-3 px-3 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors" href="reports.html">
+            <span class="material-icons text-xl">bar_chart</span>
+            <span class="font-medium text-sm nav-text">Reports</span>
+          </a>
+          <a class="nav-item flex items-center gap-3 px-3 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors" href="timetable1.html">
+            <span class="material-icons text-xl">event_note</span>
+            <span class="font-medium text-sm nav-text">Time Table</span>
+          </a>
+        </nav>
+        <div class="p-4 border-t border-slate-800">
+          <div class="flex items-center gap-3 px-3 py-2">
+            <img
+              alt="Admin Profile"
+              class="w-8 h-8 rounded-full border-2 border-slate-700 flex-shrink-0"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9AVzKSd4h7iiZVHyBc9xMCNdRoLS_GW2k7T08pTVPmikqQtyCaAGP9dmKjX6DjWzpF3YB9qWWNQRHnuvPlQMu-VjXImpRwrmGcZprU8jmNDz7NYq-6-UDhuPJpg-rC30vfMpnQk8BWF9xPUtJUzkoG12bpqWp3IpHusJuGn8hoci2g6ZvVIMEdgvNUcphMpgvkWoEnSL6flDcgo_HB9WhI6yelye65-P5cHNpQaDaEx60x-QeinbfvYBx_rfYesV73V68PWusT35I"
+            />
+            <div class="flex flex-col overflow-hidden profile-info">
+              <span class="text-sm font-semibold truncate">Parthen Desai</span>
+              <span class="text-xs text-slate-500 truncate">System Admin</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="lg:ml-64 p-4 md:p-8 transition-all duration-300">
+      
+      <!-- Mobile Header -->
+      <div class="mobile-header lg:hidden flex items-center justify-between mb-6 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+         <div class="flex items-center gap-3">
+            <label for="mobile-nav-toggle" class="cursor-pointer text-slate-700 dark:text-slate-300 p-1 bg-slate-100 dark:bg-slate-700 rounded-lg">
+                <span class="material-icons">menu</span>
+            </label>
+            <div class="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+              <span class="material-icons text-primary text-xl">location_on</span>
+              GeoAdmin
+            </div>
+         </div>
+         <div class="flex items-center gap-2">
+             <a href="settings2.html" class="p-2 text-slate-500 hover:bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center">
+                 <span class="material-icons text-xl">settings</span>
+             </a>
+             <button onclick="logout();" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg flex items-center justify-center">
+                 <span class="material-icons text-xl">logout</span>
+             </button>
+         </div>
+      </div>
+      <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">satellite_alt</span>
+            Live Tracking & Geofencing
+          </h1>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Monitor student locations and manage attendance boundaries.</p>
+        </div>
+        <div class="flex items-center gap-3 hidden lg:flex">
+            <a href="settings2.html" class="p-2 text-slate-500 hover:bg-slate-100 dark:bg-slate-800 rounded-lg relative" title="Settings">
+                <span class="material-icons">settings</span>
+            </a>
+            <button onclick="logout()" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg relative" title="Logout">
+                <span class="material-icons">logout</span>
+            </button>
+            <button onclick="toggleFencingMode()" id="fenceBtn" class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
+                <span class="material-icons text-lg">add_location_alt</span>
+                <span>Create Geofence</span>
+            </button>
+        </div>
+        <div class="lg:hidden">
+            <button onclick="toggleFencingMode()" id="fenceBtnMobile" class="p-2 bg-primary text-white rounded-lg shadow-lg">
+                <span class="material-icons">add_location_alt</span>
+            </button>
+        </div>
+      </header>
+
+      <div class="grid grid-cols-12 gap-6">
+        <!-- Map View -->
+        <div class="col-span-12 xl:col-span-8">
+          <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm relative">
+            <div id="map"></div>
+            <!-- Live GPS Status Overlay -->
+            <div class="absolute top-8 left-8 z-[20] flex items-center gap-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur px-3 py-2 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700">
+                <div id="gps-status-dot" class="w-2.5 h-2.5 rounded-full bg-slate-400"></div>
+                <div class="flex flex-col">
+                    <span id="gps-status-text" class="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">Locating Admin...</span>
+                    <span id="sidebar-coords" class="text-[9px] font-mono text-slate-400 dark:text-slate-500 leading-none">00.0000° N, 00.0000° W</span>
+                </div>
+            </div>
+            <!-- Map Overlay Controls -->
+            <div class="absolute top-8 right-8 z-[20] flex flex-col gap-2">
+                <div class="bg-white/90 dark:bg-slate-900/90 backdrop-blur p-2 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Legend</p>
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-2 px-1">
+                            <div class="w-3 h-3 rounded-full bg-primary"></div>
+                            <span class="text-xs font-medium">Student</span>
+                        </div>
+                        <div class="flex items-center gap-2 px-1">
+                            <div class="w-3 h-3 rounded-full bg-emerald-500 opacity-30 border border-emerald-500"></div>
+                            <span class="text-xs font-medium">Geofence</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side: Live Feed & Fence List -->
+        <div class="col-span-12 xl:col-span-4 space-y-6">
+            <!-- Stats -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
+                    <p class="text-xs font-medium text-slate-500">Active Students</p>
+                    <h2 id="activeStudentsCount" class="text-2xl font-bold mt-1">0</h2>
+                </div>
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
+                    <p class="text-xs font-medium text-slate-500">Inside Fence</p>
+                    <h2 id="insideFenceCount" class="text-2xl font-bold mt-1 text-emerald-500">0</h2>
+                </div>
+            </div>
+
+            <!-- Geofences -->
+            <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
+                <div class="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/30">
+                    <h3 class="text-sm font-bold">Active Geofences</h3>
+                    <span id="fenceCountLabel" class="text-[10px] bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded-full font-bold">0</span>
+                </div>
+                <div id="fenceList" class="p-2 max-h-[300px] overflow-y-auto space-y-1">
+                    <p class="text-center py-8 text-xs text-slate-400">No geofences created yet.<br>Click "Create Geofence" to begin.</p>
+                </div>
+            </div>
+
+            <!-- Live Feed -->
+            <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
+                <div class="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/30">
+                    <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300">Live Student Feed</h3>
+                </div>
+                <div id="studentFeed" class="p-2 space-y-2 max-h-[400px] overflow-y-auto">
+                    <p class="text-center py-8 text-xs text-slate-400 italic">Finding active students...</p>
+                </div>
+            </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Create Fence Modal -->
+    <div id="fenceModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-700">
+            <div class="p-6 border-b border-slate-100 dark:border-slate-800">
+                <h3 class="text-lg font-bold">New Geofence Details</h3>
+                <p class="text-xs text-slate-500 mt-1">Define the properties for this area.</p>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-500 uppercase">Area Name</label>
+                    <input id="fenceName" type="text" placeholder="e.g. Main Campus, Lab 102" class="w-full px-4 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:border-primary transition-all">
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-500 uppercase">Parent Building / Location</label>
+                    <select id="parentBuilding" class="w-full px-4 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:border-primary transition-all">
+                        <option value="campus">None (General Campus)</option>
+                        <option value="guni">Ganpat University (Main)</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-500 uppercase">Radius (meters)</label>
+                        <input id="fenceRadius" type="number" value="50" class="w-full px-4 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:border-primary transition-all">
+                    </div>
+                     <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-500 uppercase">Area Type</label>
+                        <select id="fenceType" class="w-full px-4 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:border-primary transition-all">
+                            <option value="Campus">Campus Boundary</option>
+                            <option value="Classroom">Classroom</option>
+                            <option value="Lab">Lab Facility</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Manual Coordinates Entry -->
+                <div class="pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">Manual Coordinates (Optional)</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Latitude</label>
+                            <input id="manualLat" type="number" step="any" placeholder="e.g. 23.1895" class="w-full px-4 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:border-primary transition-all">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Longitude</label>
+                            <input id="manualLng" type="number" step="any" placeholder="e.g. 72.4833" class="w-full px-4 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:border-primary transition-all">
+                        </div>
+                    </div>
+                </div>
+                <div class="p-3 bg-blue-50 dark:bg-primary/10 rounded-lg border border-blue-100 dark:border-primary/20 flex gap-3">
+                    <span class="material-icons text-primary text-sm">info</span>
+                    <p class="text-[11px] text-blue-700 dark:text-primary-300">Enter coordinates to create instantly, OR leave blank and click <b>"Set via Map"</b> to pick a location on the map.</p>
+                </div>
+            </div>
+            <div class="p-4 bg-slate-50 dark:bg-slate-800/50 flex flex-col sm:flex-row justify-end gap-3 px-6">
+                <button onclick="closeFenceModal()" class="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 order-3 sm:order-1">Cancel</button>
+                <button onclick="saveFenceSettings(true)" class="px-5 py-2.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-all order-2 flex items-center gap-2">
+                    <span class="material-icons text-sm">mouse</span>
+                    Set via Map
+                </button>
+                <button onclick="saveFenceSettings(false)" class="px-6 py-2.5 bg-primary text-white text-xs font-bold rounded-lg shadow-lg shadow-primary/20 hover:bg-blue-700 transition-all order-1 sm:order-3 flex items-center gap-2">
+                    <span class="material-icons text-sm">add_circle</span>
+                    Create Geofence
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Custom Marker Modal -->
+    <div id="markerModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-700">
+            <div class="p-6 border-b border-slate-100 dark:border-slate-800">
+                <h3 class="text-lg font-bold">Add Custom Marker</h3>
+                <p class="text-xs text-slate-500 mt-1">Give this point a recognizable name.</p>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-500 uppercase">Marker Name</label>
+                    <input id="customMarkerName" type="text" placeholder="e.g. Building A, Parking Lot" class="w-full px-4 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:border-primary transition-all">
+                </div>
+                <div class="p-3 bg-amber-50 dark:bg-amber-900/10 rounded-lg border border-amber-100 dark:border-amber-900/20 flex gap-3">
+                    <span class="material-icons text-amber-600 text-sm">push_pin</span>
+                    <p class="text-[11px] text-amber-800 dark:text-amber-200">This marker will be visible to everyone on the campus map.</p>
+                </div>
+            </div>
+            <div class="p-4 bg-slate-50 dark:bg-slate-800/50 flex justify-end gap-3 px-6">
+                <button onclick="closeMarkerModal()" class="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700">Cancel</button>
+                <button onclick="saveCustomMarker()" class="px-6 py-2.5 bg-primary text-white text-xs font-bold rounded-lg shadow-lg shadow-primary/20 hover:bg-blue-700 transition-all flex items-center gap-2">
+                    <span class="material-icons text-sm">save</span>
+                    Save Marker
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancel Confirmation Modal -->
+    <div id="cancelFenceModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 p-6">
+            <div class="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="material-icons text-red-500 text-3xl">warning</span>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white text-center mb-2">Cancel Creation?</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 text-center mb-8">
+                Are you sure you want to cancel the geofence creation? This will clear all entered details.
+            </p>
+            <div class="flex gap-3">
+                <button onclick="closeCancelModal()" class="flex-1 px-4 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+                    No, stay
+                </button>
+                <button onclick="confirmCancelFence()" class="flex-1 px-4 py-2.5 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-all shadow-lg shadow-red-500/20">
+                    Yes, cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Location Permission Modal -->
+    <div id="location-modal" class="fixed inset-0 z-[110] hidden">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all border border-slate-100 dark:border-slate-800">
+                <div class="p-6">
+                    <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <span class="material-symbols-outlined text-3xl text-primary">location_on</span>
+                    </div>
+                    <h3 class="text-2xl font-black text-slate-900 dark:text-white text-center mb-2 tracking-tight">Location Access</h3>
+                    <p class="text-slate-500 dark:text-slate-400 text-center text-sm leading-relaxed mb-8">
+                        To view your live position on the campus map and manage geofences accurately, GeoAdmin requires location access.
+                    </p>
+                    <div class="flex flex-col gap-3">
+                        <button id="allow-always" class="w-full bg-primary text-white h-12 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-md">
+                            Allow While Using Site
+                        </button>
+                        <button id="allow-session" class="w-full bg-primary/10 text-primary h-12 rounded-xl font-bold hover:bg-primary/20 transition-all">
+                            Allow This Time
+                        </button>
+                        <button id="deny-location" class="w-full bg-transparent text-slate-400 h-12 rounded-xl font-medium hover:text-slate-600 dark:hover:text-slate-200 transition-all">
+                            Do Not Allow
+                        </button>
+                    </div>
+                </div>
+                <div class="bg-slate-50 dark:bg-slate-800/50 p-4 border-t border-slate-100 dark:border-slate-700 text-center">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Secure & encrypted tracking</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GPS Hardware Check Prompt -->
+    <div id="gps-prompt" class="fixed inset-x-0 bottom-8 z-[120] hidden px-4">
+        <div class="max-w-md mx-auto bg-red-600 text-white p-4 rounded-xl shadow-2xl flex items-center justify-between gap-4 border border-red-500 animate-bounce">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-white">sensors_off</span>
+                <div class="text-white">
+                    <p class="font-bold text-sm">GPS Hardware Disabled</p>
+                    <p class="text-[10px] opacity-90">Please turn on your system GPS/Location services.</p>
+                </div>
+            </div>
+            <button onclick="checkGPSAgain()" class="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg text-xs font-bold transition-all uppercase text-white">Retry</button>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script type="module">
+      import { db } from "../firebase-config.js";
+      import { collection, onSnapshot, query, where, doc, setDoc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+      // 0. constants & elements
+      const PERMISSION_KEY_PERSISTENT = 'geoattend-location-permission';
+      const PERMISSION_KEY_SESSION = 'geoattend-location-session';
+      const userId = localStorage.getItem('geoattend-userId') || sessionStorage.getItem('geoattend-userId');
+      
+      const locationModal = document.getElementById('location-modal');
+      const gpsPrompt = document.getElementById('gps-prompt');
+      const statusDot = document.getElementById('gps-status-dot');
+      const statusText = document.getElementById('gps-status-text');
+
+      // 1. Map Initialization
+      const campusCenter = [23.5295, 72.4577]; 
+      const map = L.map('map', { maxZoom: 24 }).setView(campusCenter, 16);
+
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        maxZoom: 24,
+        maxNativeZoom: 19
+      }).addTo(map);
+
+      // 1.1 Permanent Campus Marker (Always Visible)
+      const guniIcon = L.divIcon({
+          className: 'guni-marker',
+          html: `<div class="flex flex-col items-center">
+                    <span class="material-icons text-primary bg-white rounded-full p-1 shadow-lg border-2 border-primary">school</span>
+                    <span class="text-[10px] font-black bg-primary text-white px-2 py-0.5 rounded shadow-lg mt-1 whitespace-nowrap uppercase tracking-tighter">Ganpat University</span>
+                 </div>`,
+          iconSize: [100, 50],
+          iconAnchor: [50, 40]
+      });
+      L.marker(campusCenter, { icon: guniIcon, zIndexOffset: 900 }).addTo(map)
+        .on('click', () => {
+            isFollowingUser = true;
+            map.setView(campusCenter, 16);
+        });
+
+      // 2. Global State
+      let geofences = {};
+      let studentMarkers = {};
+      let userMarker = null;
+      let isFencingMode = false;
+      let tempFenceData = null;
+      let isFollowingUser = true;
+      let customMarkers = {};
+      let pendingMarkerCoords = null;
+      const customMarkerGroup = L.layerGroup();
+      const fenceLabelGroup = L.layerGroup();
+
+      // Map Interaction Detection & Zoom visibility
+      map.on('dragstart zoomstart', () => {
+          isFollowingUser = false;
+      });
+
+      map.on('zoomend', () => {
+          const currentZoom = map.getZoom();
+          
+          // Markers visibility
+          if (currentZoom >= 17) {
+              if (!map.hasLayer(customMarkerGroup)) customMarkerGroup.addTo(map);
+          } else {
+              if (map.hasLayer(customMarkerGroup)) map.removeLayer(customMarkerGroup);
+          }
+
+          // Geofence Labels visibility
+          if (currentZoom >= 20) {
+              if (!map.hasLayer(fenceLabelGroup)) fenceLabelGroup.addTo(map);
+              refreshLabelSizes(); // Update sizes dynamically on zoom
+          } else {
+              if (map.hasLayer(fenceLabelGroup)) map.removeLayer(fenceLabelGroup);
+          }
+      });
+
+      // 3. User (Admin) Tracking Logic
+      function updateUserMarker(lat, lng) {
+          if (!userMarker) {
+              const pulseIcon = L.divIcon({
+                  className: 'admin-marker-container',
+                  html: `
+                      <div class="relative flex items-center justify-center">
+                          <div class="absolute w-8 h-8 bg-primary rounded-full pulse-ring"></div>
+                          <div class="relative w-4 h-4 bg-primary border-2 border-white rounded-full pulse-dot shadow-lg"></div>
+                      </div>
+                  `,
+                  iconSize: [32, 32]
+              });
+              userMarker = L.marker([lat, lng], { icon: pulseIcon }).addTo(map);
+              userMarker.bindPopup('<b class="text-primary">You (Admin)</b><br>Location tracking active').openPopup();
+          } else {
+              userMarker.setLatLng([lat, lng]);
+          }
+          
+          if (isFollowingUser) {
+              map.panTo([lat, lng]);
+          }
+          statusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]";
+          statusText.textContent = "Live • Tracking Active";
+          
+          const coordsElem = document.getElementById('sidebar-coords');
+          if (coordsElem) {
+              coordsElem.textContent = `${lat.toFixed(4)}° N, ${lng.toFixed(4)}° W`;
+          }
+          
+          gpsPrompt.classList.add('hidden');
+      }
+
+      function startLocationTracking() {
+          if (!navigator.geolocation) {
+              statusText.textContent = "GPS Not Supported";
+              return;
+          }
+
+          const hasConsent = localStorage.getItem(PERMISSION_KEY_PERSISTENT) === 'granted' || 
+                             sessionStorage.getItem(PERMISSION_KEY_SESSION) === 'granted';
+
+          if (!hasConsent) {
+              locationModal.classList.remove('hidden');
+              statusText.textContent = "Awaiting Permission";
+              return;
+          }
+
+          navigator.geolocation.watchPosition(
+              async (position) => {
+                  const lat = position.coords.latitude;
+                  const lng = position.coords.longitude;
+                  
+                  updateUserMarker(lat, lng);
+
+                  // Optional: Update admin location in DB (consistent with other roles)
+                  if (userId) {
+                      try {
+                          await updateDoc(doc(db, "users", userId), {
+                              lastPosition: {
+                                  lat: lat,
+                                  lng: lng,
+                                  timestamp: serverTimestamp()
+                              }
+                          });
+                      } catch (err) {
+                          console.error("Error updating location:", err);
+                      }
+                  }
+              },
+              (error) => {
+                  console.error("Geolocation error:", error.message);
+                  statusText.textContent = "GPS Error";
+                  statusDot.className = "w-2.5 h-2.5 rounded-full bg-red-500";
+                  if (error.code === 1 || error.code === 3) {
+                      gpsPrompt.classList.remove('hidden');
+                  }
+              },
+              { enableHighAccuracy: true, maximumAge: 30000, timeout: 27000 }
+          );
+      }
+
+      window.checkGPSAgain = function() {
+          gpsPrompt.classList.add('hidden');
+          startLocationTracking();
+      };
+
+      // Modal Button Actions
+      document.getElementById('allow-always').addEventListener('click', () => {
+          localStorage.setItem(PERMISSION_KEY_PERSISTENT, 'granted');
+          locationModal.classList.add('hidden');
+          startLocationTracking();
+      });
+
+      document.getElementById('allow-session').addEventListener('click', () => {
+          sessionStorage.setItem(PERMISSION_KEY_SESSION, 'granted');
+          locationModal.classList.add('hidden');
+          startLocationTracking();
+      });
+
+      document.getElementById('deny-location').addEventListener('click', () => {
+          locationModal.classList.add('hidden');
+          statusText.textContent = "Tracking Disabled";
+          statusDot.className = "w-2.5 h-2.5 rounded-full bg-slate-400";
+      });
+
+      function getDynamicFontSize(radius) {
+          const zoom = map.getZoom();
+          // Base size calculation: radius + zoom bonus
+          // At zoom 20, multiplier is 1. At zoom 24, multiplier is significantly larger.
+          const zoomFactor = Math.pow(1.2, zoom - 20);
+          const baseSize = Math.max(8, radius / 2.5);
+          return Math.min(60, baseSize * zoomFactor) + 'px';
+      }
+
+      function refreshLabelSizes() {
+          Object.keys(geofences).forEach(id => {
+              const data = geofences[id];
+              if (data.label) {
+                  const fontSize = getDynamicFontSize(data.radius || 50);
+                  const displayName = data.name.replace(/^class\s+/i, '');
+                  const trackingClass = (data.radius || 50) < 25 ? 'tracking-normal' : 'tracking-wide';
+                  
+                  const labelIcon = L.divIcon({
+                      className: 'fence-label-icon',
+                      html: `<div style="font-size: ${fontSize}; min-width: 100px; text-shadow: 0 0 3px white, 0 0 5px white, 0 0 8px white;" class="font-bold text-slate-900 uppercase ${trackingClass} text-center drop-shadow-sm">${displayName}</div>`,
+                      iconSize: [200, 60],
+                      iconAnchor: [100, 30]
+                  });
+                  data.label.setIcon(labelIcon);
+              }
+          });
+      }
+
+      // 4. Geofence Real-time listener
+      onSnapshot(collection(db, "geofences"), (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          const data = change.doc.data();
+          const id = change.doc.id;
+
+          if (change.type === "added" || change.type === "modified") {
+            // Remove old circle and label if modified
+            if (geofences[id]) {
+                map.removeLayer(geofences[id].circle);
+                if (geofences[id].label) fenceLabelGroup.removeLayer(geofences[id].label);
+            }
+
+            // Add circle to map
+            const circle = L.circle([data.lat, data.lng], {
+              color: '#135bec',
+              fillColor: '#135bec',
+              fillOpacity: 0.15,
+              radius: data.radius || 50
+            }).addTo(map);
+
+            // Add inner label with dynamic zoom-based font size
+            const radius = data.radius || 50;
+            const fontSize = getDynamicFontSize(radius);
+            const displayName = data.name.replace(/^class\s+/i, '');
+            const trackingClass = radius < 25 ? 'tracking-normal' : 'tracking-wide';
+            
+            const labelIcon = L.divIcon({
+                className: 'fence-label-icon',
+                html: `<div style="font-size: ${fontSize}; min-width: 100px; text-shadow: 0 0 3px white, 0 0 5px white, 0 0 8px white;" class="font-bold text-slate-900 uppercase ${trackingClass} text-center drop-shadow-sm">${displayName}</div>`,
+                iconSize: [200, 60],
+                iconAnchor: [100, 30]
+            });
+
+            const label = L.marker([data.lat, data.lng], { 
+                icon: labelIcon,
+                interactive: false,
+                zIndexOffset: -100 
+            }).addTo(fenceLabelGroup);
+            
+            // Map Popup with Radius Edit
+            const popupHtml = `
+              <div class="p-2 space-y-2">
+                <b class="text-sm">${data.name}</b><br>
+                <div class="flex items-center gap-2 mt-1">
+                  <span class="text-[10px] text-slate-500">Radius:</span>
+                  <input type="number" id="radius-input-${id}" value="${data.radius}" class="w-16 px-1 py-0.5 text-[10px] border border-slate-200 rounded">
+                  <span class="text-[10px] text-slate-500">m</span>
+                </div>
+                <button onclick="updateFenceRadius('${id}')" class="w-full bg-primary text-white text-[10px] py-1 rounded font-bold hover:bg-blue-600 transition-all">Update Radius</button>
+              </div>
+            `;
+            
+            circle.bindPopup(popupHtml);
+
+            geofences[id] = { ...data, circle, label };
+            renderFenceList();
+          }
+
+          if (change.type === "removed") {
+            if (geofences[id]) {
+                map.removeLayer(geofences[id].circle);
+                if (geofences[id].label) fenceLabelGroup.removeLayer(geofences[id].label);
+                delete geofences[id];
+            }
+            renderFenceList();
+          }
+        });
+        document.getElementById('fenceCountLabel').textContent = Object.keys(geofences).length;
+      });
+
+      // 4. Student Real-time tracking
+      // We look for students who have updated their location in the last 15 minutes
+      const fifteenMinsAgo = new Date(Date.now() - 15 * 60 * 1000);
+      onSnapshot(query(collection(db, "users"), where("role", "==", "student")), (snapshot) => {
+          let activeCount = 0;
+          let insideCount = 0;
+          let feedHtml = '';
+
+          snapshot.forEach((userDoc) => {
+              const data = userDoc.data();
+              const id = userDoc.id;
+
+              if (data.lastPosition && data.lastPosition.lat) {
+                  const lastSeen = data.lastPosition.timestamp?.toDate() || new Date(0);
+                  const isRecent = lastSeen > fifteenMinsAgo;
+
+                  if (isRecent) {
+                      activeCount++;
+                      
+                      // Check if inside any fence
+                      let isInside = false;
+                      Object.values(geofences).forEach(fence => {
+                          const dist = map.distance([data.lastPosition.lat, data.lastPosition.lng], [fence.lat, fence.lng]);
+                          if (dist <= fence.radius) isInside = true;
+                      });
+                      if (isInside) insideCount++;
+
+                      // Update/Add Marker
+                      if (!studentMarkers[id]) {
+                          const icon = L.divIcon({
+                              className: 'student-marker',
+                              html: `<div class="w-4 h-4 bg-primary rounded-full border-2 border-white shadow-lg animate-pulse"></div>`,
+                              iconSize: [20, 20]
+                          });
+                          studentMarkers[id] = L.marker([data.lastPosition.lat, data.lastPosition.lng], { icon }).addTo(map);
+                      } else {
+                          studentMarkers[id].setLatLng([data.lastPosition.lat, data.lastPosition.lng]);
+                      }
+                      studentMarkers[id].bindPopup(`<b>${data.name}</b><br>ID: ${data.universityId || id}<br>Status: ${isInside ? 'Inside Fence' : 'Outside'}`);
+
+                      // Add to Feed
+                      feedHtml += `
+                      <div class="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+                          <div class="flex items-center gap-3">
+                              <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px] font-bold">
+                                  ${data.name.split(' ').map(n=>n[0]).join('')}
+                              </div>
+                              <div>
+                                  <p class="text-[12px] font-bold truncate max-w-[120px]">${data.name}</p>
+                                  <p class="text-[10px] text-slate-500">${isInside ? '📍 In ' + (data.activeFence || 'Fence') : '🚶 Moving'}</p>
+                              </div>
+                          </div>
+                          <span class="w-2 h-2 rounded-full ${isInside ? 'bg-emerald-500' : 'bg-slate-300'}"></span>
+                      </div>`;
+                  } else {
+                      // Student is offline or hasn't updated in 15 mins
+                      if (studentMarkers[id]) {
+                          map.removeLayer(studentMarkers[id]);
+                          delete studentMarkers[id];
+                      }
+                  }
+              }
+          });
+
+          document.getElementById('activeStudentsCount').textContent = activeCount;
+          document.getElementById('insideFenceCount').textContent = insideCount;
+          document.getElementById('studentFeed').innerHTML = feedHtml || '<p class="text-center py-8 text-xs text-slate-400 italic">No active students on campus.</p>';
+      });
+
+      // 5. Geofence Lifecycle
+      window.logout = function() {
+        localStorage.removeItem('geoattend-session');
+        localStorage.removeItem('geoattend-userId');
+        sessionStorage.removeItem('geoattend-session');
+        sessionStorage.removeItem('geoattend-userId');
+        window.location.href = '../loginpage.html';
+      };
+
+      function resetFenceUI() {
+          isFencingMode = false;
+          tempFenceData = null;
+          const btn = document.getElementById('fenceBtn');
+          const btnMobile = document.getElementById('fenceBtnMobile');
+          const content = `<span class="material-icons text-lg">add_location_alt</span><span>Create Geofence</span>`;
+          btn.innerHTML = content;
+          btnMobile.innerHTML = `<span class="material-icons">add_location_alt</span>`;
+          btn.classList.replace('bg-red-500', 'bg-primary');
+          btnMobile.classList.replace('bg-red-500', 'bg-primary');
+          map.getContainer().style.cursor = '';
+      }
+
+      window.toggleFencingMode = function() {
+          const modal = document.getElementById('fenceModal');
+          const cancelModal = document.getElementById('cancelFenceModal');
+          
+          if (!isFencingMode) {
+              // Populate Parent Building dropdown
+              const select = document.getElementById('parentBuilding');
+              let selectHtml = `
+                  <option value="campus">None (General Campus)</option>
+                  <option value="guni">Ganpat University (Main)</option>
+              `;
+              
+              Object.entries(customMarkers).forEach(([id, marker]) => {
+                  const markerName = marker.getPopup().getContent().match(/<b class="text-sm">(.*?)<\/b>/)[1];
+                  selectHtml += `<option value="${id}">${markerName}</option>`;
+              });
+              select.innerHTML = selectHtml;
+              
+              modal.classList.remove('hidden');
+          } else {
+              // Show custom website modal instead of chrome popup
+              cancelModal.classList.remove('hidden');
+          }
+      };
+
+      window.closeCancelModal = function() {
+          document.getElementById('cancelFenceModal').classList.add('hidden');
+      };
+
+      window.confirmCancelFence = function() {
+          closeCancelModal();
+          resetFenceUI();
+      };
+
+      window.closeFenceModal = function() {
+          document.getElementById('fenceModal').classList.add('hidden');
+          // Clear manual inputs on close/cancel
+          document.getElementById('manualLat').value = '';
+          document.getElementById('manualLng').value = '';
+      };
+
+      window.closeMarkerModal = function() {
+          document.getElementById('markerModal').classList.add('hidden');
+          document.getElementById('customMarkerName').value = '';
+          pendingMarkerCoords = null;
+      };
+
+      window.saveCustomMarker = async function() {
+          const name = document.getElementById('customMarkerName').value.trim();
+          if (!name) return alert("Please enter a name for the marker");
+          if (!pendingMarkerCoords) return;
+
+          try {
+              const markerId = `marker-${Date.now()}`;
+              await setDoc(doc(db, "custom_markers", markerId), {
+                  name,
+                  lat: pendingMarkerCoords.lat,
+                  lng: pendingMarkerCoords.lng,
+                  createdAt: serverTimestamp()
+              });
+              closeMarkerModal();
+          } catch (err) {
+              console.error("Error saving marker:", err);
+              alert("Failed to save marker.");
+          }
+      };
+
+      window.deleteCustomMarker = async function(id) {
+          if (confirm("Delete this marker?")) {
+              try {
+                  await deleteDoc(doc(db, "custom_markers", id));
+              } catch (err) {
+                  console.error("Error deleting marker:", err);
+              }
+          }
+      };
+
+      window.saveFenceSettings = async function(useMapClick) {
+          const name = document.getElementById('fenceName').value.trim();
+          const radius = parseInt(document.getElementById('fenceRadius').value);
+          const type = document.getElementById('fenceType').value;
+          const parentBuildingId = document.getElementById('parentBuilding').value;
+          
+          if (!name) return alert("Please enter an Area Name");
+          if (isNaN(radius) || radius <= 0) return alert("Please enter a valid radius");
+
+          const manualLat = parseFloat(document.getElementById('manualLat').value);
+          const manualLng = parseFloat(document.getElementById('manualLng').value);
+
+          if (useMapClick) {
+              // Set by Map Click Path
+              tempFenceData = { name, radius, type, parentBuildingId };
+              isFencingMode = true;
+              
+              closeFenceModal();
+              
+              const btn = document.getElementById('fenceBtn');
+              const btnMobile = document.getElementById('fenceBtnMobile');
+              btn.innerHTML = `<span class="material-icons text-lg">close</span><span>Cancel Creating</span>`;
+              btnMobile.innerHTML = `<span class="material-icons">close</span>`;
+              btn.classList.replace('bg-primary', 'bg-red-500');
+              btnMobile.classList.replace('bg-primary', 'bg-red-500');
+              map.getContainer().style.cursor = 'crosshair';
+          } else {
+              // Manual Coordinates Path
+              if (isNaN(manualLat) || isNaN(manualLng)) {
+                  return alert("Please enter valid Latitude and Longitude coordinates, or use 'Set via Map'.");
+              }
+
+              try {
+                  const fenceId = name.toLowerCase().replace(/\s+/g, '-');
+                  await setDoc(doc(db, "geofences", fenceId), {
+                      name, radius, type,
+                      lat: manualLat,
+                      lng: manualLng,
+                      parentBuildingId,
+                      createdAt: serverTimestamp()
+                  });
+                  
+                  closeFenceModal();
+                  // Reset UI state just in case
+                  isFencingMode = false;
+                  tempFenceData = null;
+              } catch (err) {
+                  console.error("Error saving geofence manually:", err);
+                  alert("Failed to save geofence.");
+              }
+          }
+      };
+
+      map.on('click', async (e) => {
+          if (isFencingMode && tempFenceData) {
+              const { lat, lng } = e.latlng;
+              const fenceId = tempFenceData.name.toLowerCase().replace(/\s+/g, '-');
+              
+              try {
+                  await setDoc(doc(db, "geofences", fenceId), {
+                      ...tempFenceData,
+                      lat,
+                      lng,
+                      createdAt: serverTimestamp()
+                  });
+                  
+                  resetFenceUI();
+              } catch (err) {
+                  console.error("Error saving geofence:", err);
+                  alert("Failed to save geofence.");
+              }
+          } else if (!isFencingMode) {
+              // Add Custom Marker Flow - Restricted to GUNI Area
+              const distFromCenter = map.distance(e.latlng, campusCenter);
+              
+              // Only allow markers within 600 meters of campus center
+              if (distFromCenter > 600) {
+                  // Optional: console.log("Click outside campus ignored");
+                  return;
+              }
+
+              pendingMarkerCoords = e.latlng;
+              document.getElementById('markerModal').classList.remove('hidden');
+              setTimeout(() => document.getElementById('customMarkerName').focus(), 100);
+          }
+      });
+
+      // 6. Custom Markers Real-time listener
+      onSnapshot(collection(db, "custom_markers"), (snapshot) => {
+          snapshot.docChanges().forEach((change) => {
+              const data = change.doc.data();
+              const id = change.doc.id;
+
+              if (change.type === "added" || change.type === "modified") {
+                  if (customMarkers[id]) customMarkerGroup.removeLayer(customMarkers[id]);
+
+                  const pinIcon = L.divIcon({
+                      className: 'custom-pin',
+                      html: `<div class="flex flex-col items-center">
+                                <span class="material-icons text-amber-500 text-2xl drop-shadow-md">push_pin</span>
+                                <span class="text-[9px] font-bold bg-white/90 text-slate-800 px-1 py-0.5 rounded shadow-sm border border-slate-200 -mt-1 whitespace-nowrap">${data.name}</span>
+                             </div>`,
+                      iconSize: [80, 40],
+                      iconAnchor: [40, 35]
+                  });
+
+                  const marker = L.marker([data.lat, data.lng], { icon: pinIcon });
+                  marker.bindPopup(`
+                      <div class="p-2">
+                          <b class="text-sm">${data.name}</b><br>
+                          <p class="text-[10px] text-slate-500 mb-2">Custom Marker</p>
+                          <button onclick="deleteCustomMarker('${id}')" class="text-[10px] font-bold text-red-500 hover:text-red-700 underline">Delete Marker</button>
+                      </div>
+                  `);
+                  customMarkers[id] = marker;
+                  customMarkerGroup.addLayer(marker);
+                  
+                  // Keep group synchronized with zoom
+                  if (map.getZoom() >= 17 && !map.hasLayer(customMarkerGroup)) {
+                      customMarkerGroup.addTo(map);
+                  }
+              }
+
+              if (change.type === "removed") {
+                  if (customMarkers[id]) {
+                      customMarkerGroup.removeLayer(customMarkers[id]);
+                      delete customMarkers[id];
+                  }
+              }
+          });
+      });
+
+      window.deleteFence = async function(id) {
+          if (confirm("Delete this geofence?")) {
+              await deleteDoc(doc(db, "geofences", id));
+          }
+      };
+
+      window.updateFenceRadius = async function(id) {
+          const input = document.getElementById(`radius-input-${id}`);
+          let newRadius = parseInt(input ? input.value : prompt("Enter new radius in meters:", geofences[id]?.radius));
+          
+          if (isNaN(newRadius) || newRadius <= 0) return alert("Please enter a valid radius");
+
+          try {
+              await updateDoc(doc(db, "geofences", id), {
+                  radius: newRadius
+              });
+          } catch (err) {
+              console.error("Error updating radius:", err);
+              alert("Failed to update radius.");
+          }
+      };
+
+      function renderFenceList() {
+          const list = document.getElementById('fenceList');
+          let html = '';
+          
+          Object.entries(geofences).forEach(([id, data]) => {
+              let parentLabel = "";
+              if (data.parentBuildingId && data.parentBuildingId !== "campus" && data.parentBuildingId !== "guni") {
+                  // Find marker name
+                  const markerId = data.parentBuildingId;
+                  const marker = customMarkers[markerId];
+                  if (marker) {
+                      const markerName = marker.getPopup().getContent().match(/<b class="text-sm">(.*?)<\/b>/)[1];
+                      parentLabel = `<span class="text-[9px] text-primary italic block">inside ${markerName}</span>`;
+                  }
+              } else if (data.parentBuildingId === "guni") {
+                  parentLabel = `<span class="text-[9px] text-primary italic block">inside Ganpat University</span>`;
+              }
+
+              html += `
+              <div class="geofence-list-item group flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-800">
+                  <div class="flex items-center gap-3">
+                      <div class="w-2 h-2 rounded-full bg-primary"></div>
+                      <div>
+                          <p class="text-xs font-bold text-slate-900 dark:text-white">${data.name}</p>
+                          ${parentLabel}
+                          <p class="text-[10px] text-slate-500">${data.radius}m • ${data.type}</p>
+                      </div>
+                  </div>
+                  <div class="actions flex gap-2 opacity-0 transition-opacity">
+                      <button onclick="updateFenceRadius('${id}')" class="text-slate-400 hover:text-primary" title="Edit Radius"><span class="material-icons text-[18px]">edit_location_alt</span></button>
+                      <button onclick="map.setView([${data.lat}, ${data.lng}], 18)" class="text-slate-400 hover:text-primary"><span class="material-icons text-[18px]">my_location</span></button>
+                      <button onclick="deleteFence('${id}')" class="text-slate-400 hover:text-red-500"><span class="material-icons text-[18px]">delete</span></button>
+                  </div>
+              </div>`;
+          });
+          
+          list.innerHTML = html || '<p class="text-center py-8 text-xs text-slate-400">No geofences created yet.</p>';
+      }
+
+      // Initialize
+      startLocationTracking();
+    </script>
+  </body>
+</html>

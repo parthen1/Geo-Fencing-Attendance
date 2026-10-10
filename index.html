@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script>
+      const session = localStorage.getItem('geoattend-session') || sessionStorage.getItem('geoattend-session');
+      if (session === 'student') window.location.href = 'student/studenthome.html';
+      else if (session === 'faculty') window.location.href = 'faculty/dashboard.html';
+      else if (session === 'admin') window.location.href = 'admin/adminhome.html';
+      else window.location.href = 'loginpage.html';
+    </script>
+  </head>
+</html>

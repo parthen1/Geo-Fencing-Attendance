@@ -1,0 +1,529 @@
+<!doctype html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Weekly Faculty Timetable - GeoAttend</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#135bec",
+              "background-light": "#f6f6f8",
+              "background-dark": "#101622",
+            },
+            fontFamily: {
+              display: ["Inter"],
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings:
+          "FILL" 0,
+          "wght" 400,
+          "GRAD" 0,
+          "opsz" 24;
+      }
+      body {
+        font-family: "Inter", sans-serif;
+      }
+
+      /* Mobile Navigation CSS */
+      .hamburger-btn {
+        display: none;
+        z-index: 110;
+        position: relative;
+      }
+      @media (max-width: 768px) {
+        .hamburger-btn {
+          display: flex;
+        }
+        .header-actions {
+          gap: 0.5rem;
+        }
+        .nav-menu {
+          position: fixed;
+          top: 64px; /* Header height */
+          left: -100%;
+          width: 100%;
+          height: calc(100vh - 64px);
+          background-color: #ffffff;
+          flex-direction: column;
+          align-items: center;
+          justify-content: flex-start;
+          padding-top: 2rem;
+          gap: 2rem;
+          transition: left 0.3s ease-in-out;
+          z-index: 1000;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .dark .nav-menu {
+          background-color: #111827;
+        }
+        .nav-menu.active {
+          left: 0;
+        }
+      }
+      @media (min-width: 769px) {
+        .hamburger-btn {
+          display: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body
+    class="bg-background-light dark:bg-background-dark text-[#0d121b] dark:text-white min-h-screen"
+  >
+    <div class="layout-container flex h-full grow flex-col">
+      <header
+        class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e7ebf3] dark:border-b-gray-800 bg-white dark:bg-background-dark px-10 py-3 sticky top-0 z-[999]"
+      >
+        <div class="flex items-center gap-4 text-[#0d121b] dark:text-white">
+          <div class="size-6 text-primary flex items-center justify-center">
+            <span class="material-symbols-outlined text-3xl">location_on</span>
+          </div>
+          <h2
+            class="text-[#0d121b] dark:text-white text-xl font-bold leading-tight tracking-[-0.015em]"
+          >
+            GeoAttend
+          </h2>
+        </div>
+        <div class="flex items-center gap-8">
+          <nav class="nav-menu flex items-center gap-8" id="navMenu">
+            <a
+              class="text-[#4c669a] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary transition-colors"
+              href="dashboard.html"
+              >Dashboard</a
+            >
+            <a
+              class="text-primary text-sm font-semibold leading-normal md:border-b-2 md:border-primary pb-1"
+              href="#"
+              >Time Table</a
+            >
+            <a
+              class="text-[#4c669a] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary transition-colors"
+              href="analytics.html"
+              >Analytics</a
+            >
+            <a
+              class="block md:hidden text-red-500 text-sm font-medium hover:text-red-700 transition-colors mt-4"
+              href="#"
+              onclick="logout();"
+              >Logout</a
+            >
+          </nav>
+          <div
+            class="flex items-center gap-4 md:border-l border-[#e7ebf3] dark:border-gray-800 md:pl-8 header-actions"
+          >
+            <!-- <button
+              class="flex items-center justify-center text-[#4c669a] dark:text-gray-400 hover:text-primary transition-colors"
+            >
+              <span class="material-symbols-outlined">settings</span>
+            </button> -->
+            <a
+                href="settings1.html"
+                class="flex size-10 items-center justify-center rounded-lg bg-[#e7ebf3] dark:bg-gray-800 text-[#0d121b] dark:text-white transition-all hover:bg-gray-200"
+              >
+                <span class="material-symbols-outlined max-md:text-[20px]">settings</span>
+              </a>
+            <a
+              href="profile1.html"
+              class="cursor-pointer group bg-center bg-no-repeat aspect-square bg-cover rounded-full size-9 border border-gray-200 block"
+              data-alt="Faculty profile picture"
+              style="
+                background-image: url(&quot;https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&amp;fit=facearea&amp;facepad=2&amp;w=256&amp;h=256&amp;q=80&quot;);
+              "
+            ></a>
+            <button onclick="logout();" class="hidden md:flex shrink-0 items-center justify-center rounded-lg h-9 w-9 bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors" title="Logout">
+                  <span class="material-symbols-outlined text-[20px]">logout</span>
+              </button>
+              
+            <button id="hamburgerBtn" class="hamburger-btn flex shrink-0 items-center justify-center rounded-lg h-10 w-10 bg-[#e7ebf3] dark:bg-gray-800 text-[#0d121b] dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+              <span class="material-symbols-outlined text-[20px]">menu</span>
+            </button>
+          </div>
+        </div>
+      </header>
+      <main class="flex-1 px-4 py-8 md:px-10 lg:px-40">
+        <div
+          class="flex flex-col md:flex-row md:items-center justify-between mb-6"
+        >
+          <div>
+            <h1
+              class="text-[#0d121b] dark:text-white text-2xl font-bold leading-tight tracking-[-0.015em]"
+            >
+              Weekly Teaching Schedule
+            </h1>
+            <p class="text-[#4c669a] dark:text-gray-400 text-sm">
+              Even Semester 2026 • Computer Engineering Department
+            </p>
+          </div>
+          <div class="mt-4 md:mt-0 flex gap-3">
+            <button
+              class="flex items-center gap-2 rounded-lg bg-white dark:bg-gray-800 border border-[#cfd7e7] dark:border-gray-700 px-4 py-2 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              <span class="material-symbols-outlined text-sm">download</span>
+              Export PDF
+            </button>
+            <button
+              class="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-blue-700 transition-colors"
+            >
+              <span class="material-symbols-outlined text-sm">print</span>
+              Print Timetable
+            </button>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          <div
+            class="flex gap-4 rounded-xl border border-[#cfd7e7] dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm"
+          >
+            <div
+              class="size-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary"
+            >
+              <span class="material-symbols-outlined text-2xl"
+                >cloud_queue</span
+              >
+            </div>
+            <div class="flex flex-col gap-1">
+              <h3 class="text-[#0d121b] dark:text-white text-base font-bold">
+                Cloud Computing
+              </h3>
+              <p class="text-[#4c669a] dark:text-gray-400 text-xs">
+                6th Sem • 6CE-D, 6CE-A
+              </p>
+            </div>
+          </div>
+          <div
+            class="flex gap-4 rounded-xl border border-[#cfd7e7] dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm"
+          >
+            <div
+              class="size-12 rounded-lg bg-green-500/10 flex items-center justify-center text-green-600"
+            >
+              <span class="material-symbols-outlined text-2xl">terminal</span>
+            </div>
+            <div class="flex flex-col gap-1">
+              <h3 class="text-[#0d121b] dark:text-white text-base font-bold">
+                Python Programming
+              </h3>
+              <p class="text-[#4c669a] dark:text-gray-400 text-xs">
+                4th Sem • 4CE-A, 4CE-B
+              </p>
+            </div>
+          </div>
+          <div
+            class="flex gap-4 rounded-xl border border-[#cfd7e7] dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm"
+          >
+            <div
+              class="size-12 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-600"
+            >
+              <span class="material-symbols-outlined text-2xl">database</span>
+            </div>
+            <div class="flex flex-col gap-1">
+              <h3 class="text-[#0d121b] dark:text-white text-base font-bold">
+                Data Structures
+              </h3>
+              <p class="text-[#4c669a] dark:text-gray-400 text-xs">
+                2nd Sem • 2CE-C, 2CE-D
+              </p>
+            </div>
+          </div>
+        </div>
+        <div
+          class="border-b border-[#cfd7e7] dark:border-gray-800 mb-6 overflow-x-auto"
+        >
+          <div class="flex gap-8 min-w-max">
+            <a
+              id="tab-mon"
+              class="flex items-center gap-2 border-b-[3px] border-transparent text-[#4c669a] dark:text-gray-400 pb-3 pt-4 hover:text-primary transition-colors px-4"
+              href="#"
+            >
+              <p class="text-sm font-bold">Monday</p>
+            </a>
+            <a
+              id="tab-tue"
+              class="flex items-center gap-2 border-b-[3px] border-transparent text-[#4c669a] dark:text-gray-400 pb-3 pt-4 hover:text-primary transition-colors px-4"
+              href="#"
+            >
+              <p class="text-sm font-bold">Tuesday</p>
+            </a>
+            <a
+              id="tab-wed"
+              class="flex items-center gap-2 border-b-[3px] border-transparent text-[#4c669a] dark:text-gray-400 pb-3 pt-4 hover:text-primary transition-colors px-4"
+              href="#"
+            >
+              <p class="text-sm font-bold">Wednesday</p>
+            </a>
+            <a
+              id="tab-thu"
+              class="flex items-center gap-2 border-b-[3px] border-transparent text-[#4c669a] dark:text-gray-400 pb-3 pt-4 hover:text-primary transition-colors px-4"
+              href="#"
+            >
+              <p class="text-sm font-bold">Thursday</p>
+            </a>
+            <a
+              id="tab-fri"
+              class="flex items-center gap-2 border-b-[3px] border-transparent text-[#4c669a] dark:text-gray-400 pb-3 pt-4 hover:text-primary transition-colors px-4"
+              href="#"
+            >
+              <p class="text-sm font-bold">Friday</p>
+            </a>
+          </div>
+        </div>
+        <div
+          class="bg-white dark:bg-gray-900 rounded-xl border border-[#cfd7e7] dark:border-gray-800 overflow-hidden shadow-sm"
+        >
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-gray-50 dark:bg-gray-800/50">
+                  <th
+                    class="px-6 py-4 text-[#0d121b] dark:text-white text-sm font-bold w-48 border-r border-[#cfd7e7] dark:border-gray-800"
+                  >
+                    Time Slot
+                  </th>
+                  <th
+                    class="px-6 py-4 text-[#0d121b] dark:text-white text-sm font-bold min-w-[200px]"
+                  >
+                    Subject &amp; Session
+                  </th>
+                  <th
+                    class="px-6 py-4 text-[#0d121b] dark:text-white text-sm font-bold w-40"
+                  >
+                    Batch
+                  </th>
+                  <th
+                    class="px-6 py-4 text-[#0d121b] dark:text-white text-sm font-bold w-48"
+                  >
+                    Location
+                  </th>
+                  <th
+                    class="px-6 py-4 text-[#0d121b] dark:text-white text-sm font-bold w-40"
+                  >
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="timetable-body" class="divide-y divide-[#cfd7e7] dark:divide-gray-800">
+                <!-- Dynamic Content Injected Here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div
+            class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-100 dark:border-blue-900/40"
+          >
+            <div class="flex items-center gap-3 mb-2">
+              <span class="material-symbols-outlined text-primary">info</span>
+              <h4 class="text-[#0d121b] dark:text-white text-sm font-bold">
+                Lab Session Policy
+              </h4>
+            </div>
+            <p
+              class="text-[#4c669a] dark:text-gray-400 text-xs leading-relaxed"
+            >
+              Lab sessions are held in continuous 2-hour blocks. Faculty must
+              verify geolocation at the start and middle of each lab session to
+              maintain attendance accuracy.
+            </p>
+          </div>
+          <div
+            class="bg-background-light dark:bg-gray-800/40 rounded-lg p-4 border border-[#cfd7e7] dark:border-gray-700"
+          >
+            <div class="flex items-center gap-3 mb-2">
+              <span class="material-symbols-outlined text-gray-500"
+                >location_on</span
+              >
+              <h4 class="text-[#0d121b] dark:text-white text-sm font-bold">
+                Current Location Check
+              </h4>
+            </div>
+            <div class="flex items-center justify-between">
+              <p class="text-[#4c669a] dark:text-gray-400 text-xs">
+                Scanning for: 2NB209...
+              </p>
+              <span class="text-[10px] font-bold text-green-600 uppercase"
+                >Within Range</span
+              >
+            </div>
+            <div
+              class="w-full bg-gray-200 dark:bg-gray-700 h-1 rounded-full mt-2"
+            >
+              <div class="bg-primary h-1 rounded-full w-3/4"></div>
+            </div>
+          </div>
+        </div>
+      </main>
+      <footer
+        class="px-10 py-6 text-center border-t border-[#cfd7e7] dark:border-gray-800 bg-white dark:bg-background-dark"
+      >
+        <p class="text-[#4c669a] dark:text-gray-500 text-xs">
+          © 2026 GeoAttend Developed by Parthen04. All rights reserved.
+        </p>
+      </footer>
+    </div>
+    
+    <script type="module">
+      import { db } from "../firebase-config.js";
+      import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+      const hamburgerBtn = document.getElementById("hamburgerBtn");
+      const navMenu = document.getElementById("navMenu");
+      const userId = localStorage.getItem('geoattend-userId') || sessionStorage.getItem('geoattend-userId');
+      
+      hamburgerBtn.addEventListener("click", () => {
+        navMenu.classList.toggle("active");
+        const icon = hamburgerBtn.querySelector('.material-symbols-outlined');
+        icon.textContent = navMenu.classList.contains("active") ? "close" : "menu";
+      });
+
+      function initTheme() {
+        let savedTheme = localStorage.getItem('geoattend-theme') || 'light';
+        document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+        document.documentElement.classList.toggle('light', savedTheme !== 'dark');
+      }
+
+      window.logout = function() {
+          localStorage.removeItem('geoattend-session');
+          localStorage.removeItem('geoattend-userId');
+          sessionStorage.removeItem('geoattend-session');
+          sessionStorage.removeItem('geoattend-userId');
+          window.location.href = '../loginpage.html';
+      }
+
+      function hashString(str) {
+          let hash = 0;
+          for (let i = 0; i < str.length; i++) {
+              hash = ((hash << 5) - hash) + str.charCodeAt(i);
+              hash = hash & hash;
+          }
+          return Math.abs(hash);
+      }
+
+      function seededRandom(seed) {
+          var x = Math.sin(seed++) * 10000;
+          return x - Math.floor(x);
+      }
+
+      function generateTimetable(day, facultyId, branch) {
+          const container = document.getElementById('timetable-body');
+          const timeSlots = [
+              { start: "08:30", end: "09:15", label: "Slot 1" },
+              { start: "09:15", end: "10:10", label: "Slot 2" },
+              { start: "10:10", end: "10:45", label: "Short Break", isBreak: true },
+              { start: "10:45", end: "11:40", label: "Slot 3" },
+              { start: "11:40", end: "12:30", label: "Lunch Break", isBreak: true },
+              { start: "12:30", end: "14:10", label: "Lab Session" }
+          ];
+          
+          let subjects = ['Cloud Computing', 'Python Programming', 'Data Structures', 'AI & ML', 'Software Eng.'];
+          const locations = ['1NB108', '1NB 106-A', '2NB209', '3NB301', 'Lab 4A'];
+          const batches = ['6CE-D', '4CE-A', '2CE-C', '6CE-A', '4CE-B'];
+
+          const seed = hashString(facultyId + day + branch);
+          let html = '';
+
+          timeSlots.forEach((slot, i) => {
+              if (slot.isBreak) {
+                  html += `
+                    <tr class="bg-background-light dark:bg-background-dark/50">
+                      <td class="px-6 py-2 text-[#4c669a] dark:text-gray-500 text-[10px] font-bold uppercase tracking-widest border-r border-[#cfd7e7] dark:border-gray-800">${slot.start} - ${slot.end}</td>
+                      <td class="px-6 py-2 text-center text-[#4c669a] dark:text-gray-500 text-xs italic font-bold" colspan="4">${slot.label}</td>
+                    </tr>`;
+                  return;
+              }
+
+              const sIdx = Math.floor(seededRandom(seed + i) * subjects.length);
+              const bIdx = Math.floor(seededRandom(seed + i + 10) * batches.length);
+              const lIdx = Math.floor(seededRandom(seed + i + 20) * locations.length);
+              const isLab = slot.label === "Lab Session";
+              const status = i < 2 ? 'Completed' : (i === 3 ? 'Live' : 'Upcoming'); // Simplistic status for demonstration
+
+              html += `
+                <tr class="hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors ${status === 'Live' ? 'bg-primary/5' : ''}">
+                  <td class="px-6 py-5 text-[#4c669a] dark:text-gray-400 text-sm font-medium border-r border-[#cfd7e7] dark:border-gray-800">${slot.start} - ${slot.end}</td>
+                  <td class="px-6 py-5">
+                    <div class="flex flex-col">
+                      <span class="text-[#0d121b] dark:text-white text-sm font-bold">${subjects[sIdx]} ${isLab ? 'Lab' : ''}</span>
+                      <span class="text-[#4c669a] dark:text-gray-400 text-xs">${isLab ? 'Practical • Hands-on' : 'Lecture • Theory'}</span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-5">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200">${batches[bIdx]}</span>
+                  </td>
+                  <td class="px-6 py-5 text-[#4c669a] dark:text-gray-400 text-sm">${locations[lIdx]}</td>
+                  <td class="px-6 py-5">
+                    ${status === 'Completed' ? 
+                      `<span class="flex items-center gap-1.5 text-green-600 text-xs font-bold uppercase tracking-wider"><span class="size-1.5 rounded-full bg-green-600"></span>Completed</span>` : 
+                      (status === 'Live' ? 
+                        `<button class="flex items-center gap-1 bg-primary text-white text-[10px] font-bold px-3 py-1.5 rounded uppercase tracking-wider"><span class="material-symbols-outlined text-xs">pin_drop</span>Verified</button>` : 
+                        `<span class="text-[#4c669a] dark:text-gray-500 text-xs font-medium italic">Upcoming</span>`
+                      )
+                    }
+                  </td>
+                </tr>`;
+          });
+          container.innerHTML = html;
+      }
+
+      function highlightCurrentDay() {
+          const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+          const todayIdx = new Date().getDay();
+          const today = days[todayIdx];
+
+          if (todayIdx >= 1 && todayIdx <= 5) {
+              const tab = document.getElementById(`tab-${today}`);
+              if (tab) {
+                  tab.classList.remove('text-[#4c669a]', 'dark:text-gray-400', 'border-transparent');
+                  tab.classList.add('text-primary', 'border-primary', 'bg-primary/5', 'rounded-t-lg');
+                  tab.querySelector('p').textContent += ' (Today)';
+                  if (!tab.querySelector('.material-symbols-outlined')) {
+                      const icon = document.createElement('span');
+                      icon.className = 'material-symbols-outlined text-sm';
+                      icon.textContent = 'event_available';
+                      tab.prepend(icon);
+                  }
+              }
+              return today;
+          }
+          return 'mon'; // Fallback
+      }
+
+      async function init() {
+          initTheme();
+          const currentDay = highlightCurrentDay();
+          
+          let branch = 'Computer Engineering';
+          if (userId) {
+              try {
+                  const userDoc = await getDoc(doc(db, "users", userId));
+                  if (userDoc.exists()) branch = userDoc.data().branch || branch;
+              } catch(e) {}
+          }
+          generateTimetable(currentDay, userId || 'test-faculty', branch);
+      }
+
+      init();
+    </script>
+  </body>
+</html>
